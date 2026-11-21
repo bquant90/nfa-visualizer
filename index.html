@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>NFA Visualizer</title>
+        <link rel="stylesheet" href="css/style.css">
+    </head>
+    <body>
+        <h1>Hello, NFA</h1>
+        <p>If you can see two circles joined by an arrow below, Cytoscape is working.</p>
+
+        <!-- Cytoscape draws inside this box. -->
+         <div id="machine"></div>
+
+        <!-- Order matters: the library first, then the code that uses it. -->
+         <script src="lib/cytoscape.min.js"></script>
+         <script src="js/app.js"></script>
+    </body>
+</html>

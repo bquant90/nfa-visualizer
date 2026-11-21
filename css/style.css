@@ -1,1 +1,15 @@
 /* style.css: colors, fonts and spacing for the whole page. */
+
+body {
+    font-family: system-ui, sans-serif;
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 16px;
+}
+
+/* Cytoscape needs a box with a real height, or it draws nothing */
+#machine {
+    height: 300px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
