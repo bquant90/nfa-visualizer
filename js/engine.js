@@ -1,0 +1,1 @@
+// engine.js: runs the machine on a string and records every step as data.

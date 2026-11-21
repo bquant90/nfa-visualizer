@@ -1,0 +1,44 @@
+# Glossary
+
+New terms, one plain-English line each. Grouped by topic.
+
+## The machine (NFA)
+
+- **NFA (Nondeterministic Finite Automaton):** A machine that reads a string one character at a time and answers yes (accept) or no (reject).
+- **Alphabet:** The characters the machine knows how to read, like `0` and `1`.
+- **State:** A position the machine can be in, like `q0`. Drawn as a circle.
+- **Start state:** The one state the machine begins in.
+- **Accepting state:** A "winning" state. Drawn as a double circle. Finish on one and the string is accepted.
+- **Rule (transition):** "In state X, reading Y, you may move to Z." Drawn as an arrow.
+- **Nondeterministic:** A state can have more than one arrow for the same character. The machine follows all of them at once.
+- **Stuck:** No possible states are left. Nothing later can bring the machine back.
+
+## Git and GitHub
+
+- **Git:** A tool on your computer that takes snapshots of your project so you can go back in time.
+- **Repository (repo):** A project folder that Git is tracking.
+- **`.git` folder:** The hidden folder where Git stores every snapshot. Never edit it by hand.
+- **Commit:** One saved snapshot, with a short message saying what changed.
+- **Staging (`git add`):** Choosing which changes go into the next commit. Like packing a box before you seal it.
+- **Branch:** A line of history. We only use one, called `main`.
+- **`.gitignore`:** A list of files and folders Git should pretend aren't there.
+- **GitHub:** The website that keeps an online copy of your repo.
+- **Push:** Upload your commits from your computer to GitHub.
+- **GitHub Pages:** A free GitHub feature that turns a repo into a public website.
+
+## Web pages
+
+- **HTML:** The page's structure: headings, boxes, buttons.
+- **CSS:** The page's looks: colors, fonts, spacing.
+- **JavaScript (JS):** The page's behavior: what happens when you click.
+- **Library:** Code someone else wrote that we reuse, like Cytoscape.
+- **Minified (`.min.js`):** A library squeezed onto as few lines as possible so it loads faster. Not meant to be read.
+- **CDN:** A website that hosts libraries so pages can load them from the internet.
+- **Live Server:** A VS Code extension that shows your page in a browser and refreshes it every time you save.
+- **Terminal:** The text window where you type commands like `git status`.
+
+## Cytoscape
+
+- **Elements:** The list of things to draw. "Nodes" are circles (states). "Edges" are arrows (rules).
+- **Style:** How the elements look. Written a lot like CSS.
+- **Layout:** The rule for where elements go on the screen.
