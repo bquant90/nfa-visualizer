@@ -61,3 +61,10 @@ New terms, one plain-English line each. Grouped by topic.
 - **textContent:** Puts text on the page exactly as typed, so pasted text can never act as page code.
 - **async / await:** Lets code wait for something slow, like reading a file, without freezing the page.
 - **UTF-8:** The standard way computers store text as bytes. A file that breaks its rules is "not valid UTF-8."
+
+## Testing
+
+- **Test case:** One input with a known correct answer.
+- **Regression:** Something that used to work breaking after a change. Re-running saved test files catches it.
+- **Answer key:** The trusted version we compare against. Here, the Python file.
+- **Loop:** Code that repeats a step for each item in a list, like running Python on every test file.

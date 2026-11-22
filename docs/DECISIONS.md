@@ -85,3 +85,7 @@ Newest decisions go at the bottom.
 **Why:** One path into the parser, so files and pasted text can never behave differently. Users can see and fix what they loaded.
 **Passed on:** Sending the file straight to the parser. Less visible, and two paths to keep in sync.
 **Also:** Files that aren't proper UTF-8 text are refused with the same message as Python.
+
+## 15. One test file per scenario, with the expected result written inside
+
+**Why:** File names say what each one tests. "# Expected:" comments make each file explain itself. The parser stops at the first error, so one big file could only test one mistake.

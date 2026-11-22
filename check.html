@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Answer-key check | NFA Visualizer</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <h1>Answer-key check</h1>
+  <p class="intro">
+    A testing tool, not part of the main page. Pick test files and this page prints
+    results in the <strong>exact</strong> format the Python version prints, so the
+    two can be compared line by line.
+  </p>
+
+  <section>
+    <h2>1. Pick test files</h2>
+    <!-- "multiple" lets you select many files at once (Ctrl+A in the picker). -->
+    <input id="files" type="file" accept=".txt,text/plain" multiple>
+    <p>
+      <label><input id="trace" type="checkbox"> Include step-by-step trace</label>
+    </p>
+  </section>
+
+  <section>
+    <h2>2. Output</h2>
+    <button id="copy" type="button" class="secondary">Copy output</button>
+    <pre id="output" class="status">Pick one or more .txt files above.</pre>
+  </section>
+
+  <p><a href="index.html">← Back to the main page</a></p>
+
+  <!-- Same building blocks as the main page, plus the checker. -->
+  <script src="js/parser.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/check.js"></script>
+</body>
+</html>
