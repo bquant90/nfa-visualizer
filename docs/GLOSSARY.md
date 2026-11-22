@@ -25,6 +25,9 @@ New terms, one plain-English line each. Grouped by topic.
 - **GitHub:** The website that keeps an online copy of your repo.
 - **Push:** Upload your commits from your computer to GitHub.
 - **GitHub Pages:** A free GitHub feature that turns a repo into a public website.
+- **Remote:** An online copy of your repo, like the one on GitHub.
+- **origin:** The standard nickname for your main remote.
+- **`git push -u`:** First upload. The `-u` remembers where to push, so after this, plain `git push` works.
 
 ## Web pages
 
@@ -36,6 +39,9 @@ New terms, one plain-English line each. Grouped by topic.
 - **CDN:** A website that hosts libraries so pages can load them from the internet.
 - **Live Server:** A VS Code extension that shows your page in a browser and refreshes it every time you save.
 - **Terminal:** The text window where you type commands like `git status`.
+- **Smoke test:** A tiny check that the basic plumbing works before building real features.
+- **Console (F12):** The browser's error and message window. Red text means something broke.
+- **localhost / 127.0.0.1:** Your own computer acting as a web server. Only you can see it.
 
 ## Cytoscape
 
