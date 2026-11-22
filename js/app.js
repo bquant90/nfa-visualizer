@@ -18,6 +18,11 @@ const App = (function () {
   const layoutSelect  = document.getElementById("layout");
   const rearrangeBtn  = document.getElementById("rearrange");
   const fitButton     = document.getElementById("fit");
+  const tapeBox       = document.getElementById("tape");
+  const stepLabel     = document.getElementById("step-label");
+  const startButton   = document.getElementById("btn-start");
+  const backButton    = document.getElementById("btn-back");
+  const stepButton    = document.getElementById("btn-step");
 
   // The machine that is loaded right now (null until one loads cleanly).
   let current = null;
@@ -25,6 +30,11 @@ const App = (function () {
   // The exact text the current drawing was made from. Lets us skip redrawing
   // when nothing changed, so circles the user dragged stay where they put them.
   let drawnFrom = null;
+
+  // The playback controller for the string that was run last (null if none).
+  let player = null;
+
+  // ---------- 1. Loading a machine ----------
 
   // Read the text box, hand it to the parser, show what came back.
   function loadMachine() {
@@ -35,6 +45,7 @@ const App = (function () {
       show("error", "Error: " + result.message);
       showChips([]);
       drawnFrom = null;
+      forgetRun();
       Display.clearMachine(machineBox, "Fix the machine description to see its drawing.");
       return;
     }
@@ -51,8 +62,10 @@ const App = (function () {
     showChips(result.tests);
 
     // Only redraw when the machine text actually changed.
+    // A new drawing means any old run no longer matches it, so forget it.
     if (sourceBox.value !== drawnFrom) {
-      Display.drawMachine(machineBox, result.machine);
+      forgetRun();
+      Display.drawMachine(machineBox, result.machine, layoutSelect.value);
       drawnFrom = sourceBox.value;
     }
   }
@@ -63,9 +76,7 @@ const App = (function () {
   async function openFile() {
     const file = fileInput.files[0];
     fileInput.value = "";   // reset, so picking the same file again still works
-    if (!file) {
-      return; // the user closed the picker without choosing
-    }      
+    if (!file) return;      // the user closed the picker without choosing
 
     let text;
     try {
@@ -73,13 +84,13 @@ const App = (function () {
       // the same way the Python version does.
       const bytes = await file.arrayBuffer();
       text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
-    } 
-    catch {
+    } catch {
       current = null;
       fileNameLabel.textContent = "";
       show("error", `Error: ${file.name} is not valid UTF-8 text`);
       showChips([]);
       drawnFrom = null;
+      forgetRun();
       Display.clearMachine(machineBox, "Fix the machine description to see its drawing.");
       return;
     }
@@ -107,25 +118,50 @@ const App = (function () {
       verdictBox.hidden = false;
       verdictBox.className = "status error";
       verdictBox.textContent = "Fix the machine description above first.";
-      stepsBox.replaceChildren();
       return;
     }
 
-    // Trim spaces off the ends.
+    // Trim spaces off the ends, the same way "test:" lines in a file are trimmed.
     const text = Parser.strip(rawText);
     testInput.value = text;
 
+    // 1. The engine records every step.  2. Display builds the tape and table.
+    // 3. A player starts at step 0; the buttons move it back and forth.
     const result = Engine.run(current.machine, text);
     Display.showVerdict(verdictBox, result);
-    Display.showStepTable(stepsBox, result);
+    Display.showTape(tapeBox, result);
+    Display.showStepTable(stepsBox, result, index => player.goTo(index));
+
+    player = Player.create({
+      count: result.steps.length,
+      onShow: index => {
+        Display.showStep(result, index, stepLabel);
+        updateButtons();
+      },
+    });
+    player.reset();
+  }
+
+  // Grey out buttons that can't do anything right now.
+  function updateButtons() {
+    startButton.disabled = !player || player.atStart();
+    backButton.disabled  = !player || player.atStart();
+    stepButton.disabled  = !player || player.atEnd();
+  }
+
+  // Throw away the last run: highlights, tape, table, verdict, buttons.
+  function forgetRun() {
+    player = null;
+    Display.clearRun(tapeBox, stepLabel);
+    stepsBox.replaceChildren();
+    verdictBox.hidden = true;
+    updateButtons();
   }
 
   // One small button per "test:" line, so users can run them with one click.
   function showChips(tests) {
     chipsBox.replaceChildren();
-    if (tests.length === 0) {
-      return;
-    }
+    if (tests.length === 0) return;
 
     const label = document.createElement("span");
     label.className = "label";
@@ -158,10 +194,13 @@ const App = (function () {
   rearrangeBtn.addEventListener("click", () => Display.arrange(layoutSelect.value, true));
   fitButton.addEventListener("click", () => Display.fitView());
 
+  // Playback buttons. Each one just tells the player which step to show.
+  startButton.addEventListener("click", () => player && player.reset());
+  backButton.addEventListener("click",  () => player && player.back());
+  stepButton.addEventListener("click",  () => player && player.next());
+
   // Once the user edits the text, it no longer matches the file they opened.
-  sourceBox.addEventListener("input", () => 
-    { fileNameLabel.textContent = ""; }
-  );
+  sourceBox.addEventListener("input", () => { fileNameLabel.textContent = ""; });
 
   // Nothing else needs to reach inside App yet.
   return {};

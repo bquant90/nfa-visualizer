@@ -1,10 +1,11 @@
 // display.js: draws the machine with Cytoscape and lights up the current states.
 //
-// Two jobs so far:
+// Three jobs:
 //   1. Draw the machine with Cytoscape (drawMachine, arrange, fitView, clearMachine).
-//   2. Show a run's result: the verdict box and the table of recorded steps.
-// This is the ONLY file that talks to Cytoscape. Step-by-step playback
-// (lighting up states as the string is read) arrives in Phase 4.
+//   2. Show a run's result: the verdict box, the tape, and the table of recorded steps.
+//   3. Show ONE recorded step: light up states and arrows, the tape, the table row (showStep).
+// This is the ONLY file that talks to Cytoscape. It never decides WHICH step
+// to show; player.js and app.js decide that and call showStep().
 
 const Display = (function () {
 
@@ -35,6 +36,9 @@ const Display = (function () {
         "background-color": "#ffffff",
         "border-width": 2,
         "border-color": "#334155",
+        // Fade colors in and out instead of snapping.
+        "transition-property": "background-color, border-color",
+        "transition-duration": 250,
     }},
     // Accepting states get a double ring. "double" needs a thick border to show.
     { selector: "node.accepting", style: {
@@ -64,8 +68,32 @@ const Display = (function () {
         "loop-direction": "0deg",         // loop arrows (state to itself) sit on top
         "loop-sweep": "-50deg",
         "control-point-step-size": 50,    // how far apart parallel arrows curve
+        "transition-property": "line-color, target-arrow-color, width",
+        "transition-duration": 250,
     }},
     { selector: "edge.start-edge", style: { "label": "" } },
+
+    // ----- Playback highlights (added and removed by showStep) -----
+    // Where the machine could be right now.
+    { selector: "node.current", style: {
+        "background-color": "#fde68a",
+        "border-color": "#b45309",
+    }},
+    // A guess that just hit a dead end (no arrow for the character read).
+    { selector: "node.dead", style: {
+        "border-color": "#dc2626",
+        "border-style": "dashed",
+        "border-width": 3,
+    }},
+    // Arrows used on this step.
+    { selector: "edge.taken", style: {
+        "line-color": "#ea580c",
+        "target-arrow-color": "#ea580c",
+        "width": 4,
+        "color": "#c2410c",
+        "font-weight": "bold",
+        "z-index": 10,
+    }},
   ];
 
   // Turn a parsed machine into Cytoscape "elements": one node per state,
@@ -224,6 +252,10 @@ const Display = (function () {
 
   // ---------- 2. Showing a run's result ----------
 
+  // Built once per run, then updated by showStep().
+  let tapeCells = [];   // one box per character of the string
+  let tableRows = [];   // one table row per recorded step
+
   // Show the final answer in a green or red box.
   // The wording is temporary. Phase 5 replaces the reason codes with plain English.
   function showVerdict(box, result) {
@@ -234,15 +266,38 @@ const Display = (function () {
     box.textContent = `${label} is ${answer}   (reason code: ${result.reason})`;
   }
 
+  // Build the tape: the test string, one box per character.
+  function showTape(container, result) {
+    container.replaceChildren();
+    tapeCells = [];
+    const characters = Array.from(result.text);
+    if (characters.length === 0) {
+      const note = document.createElement("span");
+      note.className = "note";
+      note.textContent = "(empty string: nothing to read)";
+      container.appendChild(note);
+      return;
+    }
+    for (const ch of characters) {
+      const cell = document.createElement("span");
+      cell.className = "cell";
+      cell.textContent = ch === " " ? "␣" : ch;   // make spaces visible
+      container.appendChild(cell);
+      tapeCells.push(cell);
+    }
+  }
+
   // Show every recorded step as one row of a table.
-  function showStepTable(container, result) {
+  // onPick(index) runs when someone clicks a row.
+  function showStepTable(container, result, onPick) {
     container.replaceChildren();   // clear out the previous run
+    tableRows = [];
 
     const table = document.createElement("table");
     table.className = "step-table";
     addRow(table, "th", ["Step", "Read", "Before", "After", "Arrows used", "Dead ends"]);
 
-    for (const step of result.steps) {
+    result.steps.forEach((step, index) => {
       const row = addRow(table, "td", [
         String(step.position),
         step.kind === "start" ? "(start)" : `'${step.symbol}'`,
@@ -258,7 +313,10 @@ const Display = (function () {
         row.cells[1].classList.add("bad");
         row.cells[1].textContent += "  not in alphabet";
       }
-    }
+      row.classList.add("clickable");
+      row.addEventListener("click", () => onPick(index));
+      tableRows.push(row);
+    });
     container.appendChild(table);
 
     // If the machine stopped early, say which characters it never read.
@@ -268,6 +326,55 @@ const Display = (function () {
       note.textContent = `Stopped early. Never read: "${result.unread}"`;
       container.appendChild(note);
     }
+  }
+
+  // ---------- 3. Showing one step ----------
+
+  // Light up everything for step number "index" of a run.
+  function showStep(result, index, labelBox) {
+    const step = result.steps[index];
+    const isLast = index === result.steps.length - 1;
+
+    // The drawing: clear old highlights, then add this step's.
+    if (cy) {
+      cy.elements().removeClass("current taken dead");
+      for (const state of step.after) cy.getElementById(state).addClass("current");
+      if (step.kind === "start") cy.getElementById(GHOST_EDGE).addClass("taken");
+      for (const move of step.moves) cy.getElementById(edgeId(move.from, move.to)).addClass("taken");
+      // A dead end only gets marked if no other guess landed on that state.
+      for (const state of step.deadEnds) {
+        if (!step.after.includes(state)) cy.getElementById(state).addClass("dead");
+      }
+    }
+
+    // The tape: characters before this step are done, this one is current.
+    const stoppedEarly = isLast && result.unread.length > 0;
+    tapeCells.forEach((cell, i) => {
+      let state = "";
+      if (i < step.position - 1) state = "done";
+      else if (i === step.position - 1) state = "current";
+      else if (stoppedEarly) state = "never";
+      cell.className = "cell " + state;
+    });
+
+    // The table: mark the matching row.
+    tableRows.forEach((row, i) => row.classList.toggle("current-row", i === index));
+
+    // The label next to the buttons. Phase 5 replaces this with a real caption.
+    const total = Array.from(result.text).length;
+    labelBox.textContent = step.kind === "start"
+      ? `Start (0 of ${total} characters read)`
+      : `Step ${step.position} of ${total}: read '${step.symbol}'` +
+        (stoppedEarly ? "  (stopped: nothing left)" : "");
+  }
+
+  // Remove every trace of the last run (used when the machine changes).
+  function clearRun(tapeBox, labelBox) {
+    if (cy) cy.elements().removeClass("current taken dead");
+    tapeBox.replaceChildren();
+    tapeCells = [];
+    tableRows = [];
+    labelBox.textContent = "";
   }
 
   // Helper: add one row of cells. "th" for the header row, "td" for normal rows.
@@ -282,5 +389,8 @@ const Display = (function () {
     return row;
   }
 
-  return { drawMachine, arrange, fitView, clearMachine, edgeId, showVerdict, showStepTable };
+  return {
+    drawMachine, arrange, fitView, clearMachine, edgeId,
+    showVerdict, showTape, showStepTable, showStep, clearRun,
+  };
 })();

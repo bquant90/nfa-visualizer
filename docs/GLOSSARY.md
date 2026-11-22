@@ -56,6 +56,8 @@ New terms, one plain-English line each. Grouped by topic.
 - **breadthfirst:** A layout that puts the start first, then everything one arrow away, then two, and so on.
 - **Fit:** Zoom and pan so the whole drawing is visible.
 - **Ghost node:** An invisible node used only so the start arrow has somewhere to come from.
+- **cose ("spread out"):** A layout that simulates springs and magnets. Arrows pull, circles push apart. Different every run.
+- **Animate:** Glide elements to new positions instead of jumping.
 
 ## JavaScript
 
@@ -89,6 +91,7 @@ New terms, one plain-English line each. Grouped by topic.
 
 - **Separation of concerns:** Each file has one job, so you always know where to look.
 - **Conductor:** Our nickname for app.js. It doesn't do the work itself; it calls each file in the right order.
+- **Silent failure:** When code is wrong but shows no error, only a wrong result. Check the output itself, not just the Console.
 
 ## Architecture
 

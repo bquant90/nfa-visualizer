@@ -131,3 +131,16 @@ Newest decisions go at the bottom.
 ## 25. Only redraw when the machine text changes
 
 **Why:** Circles the user dragged stay put when they run strings.
+
+## 26. Three layouts (left to right, spread out, circle); the user picks
+
+**Why:** No single layout wins for every big machine. Long chains suit left to right; tangled ones suit spread out or circle. Size alone can't tell them apart.
+**Passed on (for now):** dagre / fcose extensions. More library files.
+
+## 27. The start arrow always comes from the side
+
+**Why:** Loops sit on top of circles, so an arrow from above could collide with them.
+
+## 28. States are placed in "people order" (r2 before r10)
+
+**Why:** Easier to read. We sort before handing states to Cytoscape, because its circle layout ignores its own sort setting in v3.35.0.

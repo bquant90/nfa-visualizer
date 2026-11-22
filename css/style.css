@@ -126,10 +126,10 @@ button.chip:hover { background: #dbeafe; }
 .toolbar button { margin-top: 0; padding: 6px 12px; font-size: 14px; }
 .toolbar select { padding: 6px 8px; font-size: 14px; border-radius: 6px; border: 1px solid #ccc; }
 
-/* Cytoscape needs a box with a real height, or it draws nothing */
+/* Cytoscape needs a box with a real height, or it draws nothing. */
 #machine {
   position: relative;
-  height: 420px;
+  height: 460px;
   border: 1px solid #ccc;
   border-radius: 8px;
   background: #fcfcfd;
@@ -145,3 +145,54 @@ button.chip:hover { background: #dbeafe; }
   color: #9ca3af;
 }
 .legend { color: #6b7280; font-size: 14px; margin-top: 8px; }
+
+/* Buttons that can't be used right now. */
+button:disabled { opacity: 0.4; cursor: default; }
+button:disabled:hover { background: #1e40af; }   /* no hover change when disabled */
+button.secondary:disabled:hover { background: white; }
+
+/* The "tape": the test string, one box per character. */
+.tape {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 12px;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 18px;
+}
+.tape:empty { display: none; }
+.tape .cell {
+  min-width: 28px;
+  padding: 4px 6px;
+  text-align: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background: white;
+}
+.tape .cell.done    { color: #9ca3af; background: #f3f4f6; }     /* already read */
+.tape .cell.current { background: #fde68a; border-color: #d97706; font-weight: 700; }  /* just read */
+.tape .cell.never   { color: #9ca3af; border-style: dotted; text-decoration: line-through; } /* never read */
+.tape .note { color: #6b7280; font-size: 14px; align-self: center; }
+
+/* The row of playback buttons under the drawing. */
+.player {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+.player button { margin-top: 0; }
+.step-label { color: #374151; font-size: 15px; margin-left: 6px; }
+
+/* Little color swatches in the legend, matching the drawing. */
+.key { padding: 0 4px; border-radius: 3px; }
+.key-current { background: #fde68a; }
+.key-taken   { color: #c2410c; font-weight: 600; }
+.key-dead    { color: #dc2626; border: 1px dashed #dc2626; }
+
+/* The step table row that matches what the drawing shows right now. */
+.step-table tr.current-row td { background: #fef3c7; }
+.step-table tr.clickable { cursor: pointer; }
+.step-table tr.clickable:hover td { background: #f9fafb; }
+.step-table tr.current-row:hover td { background: #fef3c7; }
