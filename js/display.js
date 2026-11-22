@@ -1,16 +1,21 @@
 // display.js: draws the machine with Cytoscape and lights up the current states.
 //
 // Two jobs so far:
-//   1. Draw the machine with Cytoscape (drawMachine, clearMachine).
+//   1. Draw the machine with Cytoscape (drawMachine, arrange, fitView, clearMachine).
 //   2. Show a run's result: the verdict box and the table of recorded steps.
-// This is the ONLY file that talks to Cytoscape.
+// This is the ONLY file that talks to Cytoscape. Step-by-step playback
+// (lighting up states as the string is read) arrives in Phase 4.
 
 const Display = (function () {
 
   // ---------- 1. Drawing the machine ----------
 
   // The current Cytoscape drawing (null when nothing is drawn).
+  // Phase 4 will use this to light up states and arrows.
   let cy = null;
+
+  // The start state of the machine being drawn (the start arrow points at it).
+  let startState = null;
 
   // IDs for the invisible "start arrow" pieces. They contain spaces on
   // purpose: state names can never contain spaces, so these can't clash.
@@ -113,63 +118,101 @@ const Display = (function () {
   }
 
   // Draw a machine inside the given box, replacing any old drawing.
-  function drawMachine(container, machine) {
+  function drawMachine(container, machine, layoutName) {
     clearMachine(container);
+    startState = machine.startState;
 
     cy = cytoscape({
       container,
       elements: buildElements(machine),
       style: STYLE,
-      minZoom: 0.2,
+      minZoom: 0.1,
       maxZoom: 2.5,
       boxSelectionEnabled: false,   // no drag-to-select rectangle; dragging moves circles
       autounselectify: true,        // clicking doesn't "select" things (Phase 4 does highlighting)
     });
 
-    arrange(machine);
+    arrange(layoutName, false);
 
-    // Keep the start arrow attached when someone drags the start state.
-    cy.getElementById(machine.startState).on("position", () => placeGhost(machine));
+    // Keep the start arrow attached when someone drags the start state
+    // (and while a layout animates it to a new spot).
+    cy.getElementById(startState).on("position", placeGhost);
   }
 
-  // Lay the states out left to right, starting from the start state.
-  // "breadthfirst" puts the start state first, then everything one arrow away,
-  // then everything two arrows away, and so on, like the columns of a textbook diagram.
-  function arrange(machine) {
-    const ghost = cy.getElementById(GHOST);
-    const everythingElse = cy.elements().not(ghost).not(cy.getElementById(GHOST_EDGE));
-
-    everythingElse.layout({
-      name: "breadthfirst",
-      directed: true,
-      roots: cy.getElementById(machine.startState),
-      direction: "rightward",
-      spacingFactor: 1.2,
-      fit: false,
-      animate: false,
-    }).run();
-
-    placeGhost(machine);
-    cy.fit(undefined, 40);   // zoom so everything fits, with 40px of breathing room
-    // Small machines would otherwise be blown up huge, so cap how close we start.
-    if (cy.zoom() > 1.2) {
-      cy.zoom(1.2);
-      cy.center();
+  // The three ways to arrange the states. Each one is a set of Cytoscape
+  // layout options. They all leave out the invisible start-arrow pieces,
+  // which placeGhost() positions by hand afterwards.
+  function layoutOptions(layoutName) {
+    if (layoutName === "spread-out") {
+      // A physics simulation: arrows pull like springs, circles push apart.
+      // Starts from random spots, so every click gives a new arrangement.
+      return { name: "cose", randomize: true, nodeRepulsion: () => 400000,
+               idealEdgeLength: () => 110, nodeOverlap: 20, padding: 40 };
     }
+    if (layoutName === "circle") {
+      // Every state evenly spaced around a ring, in name order.
+      return { name: "circle", avoidOverlap: true, padding: 40 };
+    }
+    // Default, "left-to-right": the start state first, then everything one arrow
+    // away, then two arrows away, and so on, like the columns of a textbook diagram.
+    return { name: "breadthfirst", directed: true, roots: cy.getElementById(startState),
+             direction: "rightward", spacingFactor: 1.2, padding: 40 };
   }
 
-  // Put the invisible dot just to the left of the start state.
-  function placeGhost(machine) {
-    const start = cy.getElementById(machine.startState).position();
-    cy.getElementById(GHOST).position({ x: start.x - 75, y: start.y });
+  // Arrange the states, then zoom so everything fits.
+  // animate = true glides the circles to their new spots (used when switching layouts).
+  function arrange(layoutName, animate) {
+    if (!cy) return;
+    // Hand the states over in "people order" (r2 before r10). Layouts place
+    // states in the order they receive them. (Cytoscape's own "sort" option
+    // for the circle layout is ignored in this version, so we sort here instead.)
+    const states = cy.nodes().not(cy.getElementById(GHOST))
+      .sort((a, b) => a.id().localeCompare(b.id(), undefined, { numeric: true }));
+    const arrows = cy.edges().not(cy.getElementById(GHOST_EDGE));
+    const layout = states.union(arrows).layout({
+      ...layoutOptions(layoutName),
+      fit: false,
+      animate,
+      animationDuration: 500,
+    });
+    layout.one("layoutstop", () => { placeGhost(); fitView(animate); });
+    layout.run();
+  }
+
+  // Zoom and pan so the whole machine is visible, with some breathing room.
+  // Small machines would otherwise be blown up huge, so the zoom is capped.
+  function fitView(animate = true) {
+    if (!cy) return;
+    const padding = 40;
+    // Work out where "fit" would land without moving anything yet.
+    const box = cy.elements().boundingBox();
+    const width = cy.width() - 2 * padding;
+    const height = cy.height() - 2 * padding;
+    const zoom = Math.min(1.2, width / box.w, height / box.h);
+    const pan = {
+      x: cy.width() / 2 - zoom * (box.x1 + box.w / 2),
+      y: cy.height() / 2 - zoom * (box.y1 + box.h / 2),
+    };
+    if (animate) cy.animate({ zoom, pan, duration: 400 });
+    else { cy.zoom(zoom); cy.pan(pan); }
+  }
+
+  // Put the invisible dot beside the start state, so the start arrow points in
+  // from the side. Loops sit on top of circles, so the side keeps them apart.
+  // It comes from the left, unless the start state is on the right of the drawing.
+  function placeGhost() {
+    if (!cy) return;
+    const start = cy.getElementById(startState).position();
+    const states = cy.nodes().not(cy.getElementById(GHOST));
+    const box = states.boundingBox();
+    const middle = box.x1 + box.w / 2;
+    const side = start.x > middle + 1 ? 1 : -1;   // +1 = right, -1 = left
+    cy.getElementById(GHOST).position({ x: start.x + side * 75, y: start.y });
   }
 
   // Remove the drawing and show a grey message instead.
   function clearMachine(container, message) {
-    if (cy) { 
-        cy.destroy(); 
-        cy = null; 
-    }
+    if (cy) { cy.destroy(); cy = null; }
     container.replaceChildren();
     if (message) {
       const p = document.createElement("p");
@@ -239,5 +282,5 @@ const Display = (function () {
     return row;
   }
 
-  return { drawMachine, clearMachine, edgeId, showVerdict, showStepTable };
+  return { drawMachine, arrange, fitView, clearMachine, edgeId, showVerdict, showStepTable };
 })();

@@ -15,6 +15,9 @@ const App = (function () {
   const verdictBox    = document.getElementById("verdict");
   const stepsBox      = document.getElementById("steps");
   const machineBox    = document.getElementById("machine");
+  const layoutSelect  = document.getElementById("layout");
+  const rearrangeBtn  = document.getElementById("rearrange");
+  const fitButton     = document.getElementById("fit");
 
   // The machine that is loaded right now (null until one loads cleanly).
   let current = null;
@@ -148,6 +151,12 @@ const App = (function () {
   testInput.addEventListener("keydown", event => {
     if (event.key === "Enter") runString(testInput.value);
   });
+
+  // Drawing controls. Changing the layout (or clicking Rearrange) glides the
+  // circles to new spots; Fit to screen zooms so everything is visible.
+  layoutSelect.addEventListener("change", () => Display.arrange(layoutSelect.value, true));
+  rearrangeBtn.addEventListener("click", () => Display.arrange(layoutSelect.value, true));
+  fitButton.addEventListener("click", () => Display.fitView());
 
   // Once the user edits the text, it no longer matches the file they opened.
   sourceBox.addEventListener("input", () => 

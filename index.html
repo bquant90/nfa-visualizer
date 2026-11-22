@@ -47,6 +47,16 @@
         <!-- 3. The drawing of the machine (Cytoscape draws inside #machine) -->
         <section>
             <h2>3. The machine</h2>
+            <div class="toolbar">
+                <label for="layout">Arrange:</label>
+                <select id="layout">
+                    <option value="left-to-right">Left to right</option>
+                    <option value="spread-out">Spread out (shuffles each time)</option>
+                    <option value="circle">Circle</option>
+                </select>
+                <button id="rearrange" type="button" class="secondary">Rearrange</button>
+                <button id="fit" type="button" class="secondary">Fit to screen</button>
+            </div>
             <div id="machine"><p class="placeholder">Load a machine to see its drawing.</p></div>
             <p class="legend">
                 Circles are states. Arrows are rules, labeled with the characters they read.
