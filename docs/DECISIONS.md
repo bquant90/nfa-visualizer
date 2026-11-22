@@ -102,3 +102,32 @@ Newest decisions go at the bottom.
 ## 18. A separate answer-key page (check.html + js/check.js)
 
 **Why:** Prints the exact Python format, including --trace, for line-by-line comparison. Keeps testing tools off the visitor page.
+
+## 19. Run always re-loads the machine text first
+
+**Why:** Prevents testing an out-of-date machine after an edit. Parsing is instant, so it costs nothing.
+
+## 20. Typed test strings are trimmed at the ends
+
+**Why:** Matches how "test:" lines in a file are trimmed. A space in the middle is kept and flagged.
+
+## 21. All showing of results lives in display.js
+
+**Why:** Showing results is the display layer's job, even for the temporary table. app.js only says "run this, then show it."
+
+## 22. One arrow per pair of states, characters combined ("0, 1")
+
+**Why:** Textbook style, and far fewer arrows on big machines.
+
+## 23. The start arrow comes from an invisible node
+
+**Why:** Textbook convention. Cytoscape only draws arrows between nodes, so we add a hidden one. It follows the start state when dragged.
+
+## 24. Default layout: breadthfirst, left to right from the start state
+
+**Why:** Built in, reads like a textbook, same picture every time.
+**Passed on (for now):** dagre (two extra library files). cose (comes out different each time, offered later for big machines).
+
+## 25. Only redraw when the machine text changes
+
+**Why:** Circles the user dragged stay put when they run strings.

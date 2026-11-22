@@ -116,11 +116,20 @@ button.chip:hover { background: #dbeafe; }
 
 /* Cytoscape needs a box with a real height, or it draws nothing */
 #machine {
-  height: 300px;
+  position: relative;
+  height: 420px;
   border: 1px solid #ccc;
   border-radius: 8px;
+  background: #fcfcfd;
+}
+/* The grey message shown when there's nothing to draw. */
+.placeholder {
+  position: absolute;
+  inset: 0;
+  margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #9ca3af;
 }
-.placeholder { color: #9ca3af; }
+.legend { color: #6b7280; font-size: 14px; margin-top: 8px; }

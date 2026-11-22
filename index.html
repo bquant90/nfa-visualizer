@@ -44,9 +44,20 @@
             <div id="status" class="status">Nothing loaded yet.</div>
         </section>
 
-        <!-- 3. Where the user picks a string and runs it -->
+        <!-- 3. The drawing of the machine (Cytoscape draws inside #machine) -->
         <section>
-            <h2>3. Test a string</h2>
+            <h2>3. The machine</h2>
+            <div id="machine"><p class="placeholder">Load a machine to see its drawing.</p></div>
+            <p class="legend">
+                Circles are states. Arrows are rules, labeled with the characters they read.
+                The arrow coming from nowhere points at the start state.
+                A double circle is an accepting (winning) state. Drag circles to rearrange them.
+            </p>
+        </section>
+
+        <!-- 4. Where the user picks a string and runs it -->
+        <section>
+            <h2>4. Test a string</h2>
             <div class="actions">
                 <input id="test-string" type="text" placeholder="Type a string, e.g. 1101" spellcheck="false" autocomplete="off">
                 <button id="run" type="button">Run</button>
@@ -55,14 +66,6 @@
             <div id="test-chips" class="chips"></div>
             <div id="verdict" class="status" hidden></div>
             <div id="steps"></div>
-        </section>
-
-        <!-- 4. The drawing. -->
-        <section>
-            <h2>3. The machine</h2>
-            <div id="machine">
-                <p class="placeholder">The drawing will appear here in Phase 3.</p>
-            </div>
         </section>
 
         <!-- Order matters: each file can only use the files loaded above it. -->

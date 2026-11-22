@@ -14,9 +14,14 @@ const App = (function () {
   const chipsBox      = document.getElementById("test-chips");
   const verdictBox    = document.getElementById("verdict");
   const stepsBox      = document.getElementById("steps");
+  const machineBox    = document.getElementById("machine");
 
   // The machine that is loaded right now (null until one loads cleanly).
   let current = null;
+
+  // The exact text the current drawing was made from. Lets us skip redrawing
+  // when nothing changed, so circles the user dragged stay where they put them.
+  let drawnFrom = null;
 
   // Read the text box, hand it to the parser, show what came back.
   function loadMachine() {
@@ -26,6 +31,8 @@ const App = (function () {
       current = null;
       show("error", "Error: " + result.message);
       showChips([]);
+      drawnFrom = null;
+      Display.clearMachine(machineBox, "Fix the machine description to see its drawing.");
       return;
     }
 
@@ -39,6 +46,12 @@ const App = (function () {
     ];
     show("ok", lines.join("\n"));
     showChips(result.tests);
+
+    // Only redraw when the machine text actually changed.
+    if (sourceBox.value !== drawnFrom) {
+      Display.drawMachine(machineBox, result.machine);
+      drawnFrom = sourceBox.value;
+    }
   }
 
   // Runs after the user picks a file. Copies it into the text box, then loads it,
@@ -63,6 +76,8 @@ const App = (function () {
       fileNameLabel.textContent = "";
       show("error", `Error: ${file.name} is not valid UTF-8 text`);
       showChips([]);
+      drawnFrom = null;
+      Display.clearMachine(machineBox, "Fix the machine description to see its drawing.");
       return;
     }
 

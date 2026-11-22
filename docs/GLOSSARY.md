@@ -51,6 +51,11 @@ New terms, one plain-English line each. Grouped by topic.
 - **Elements:** The list of things to draw. "Nodes" are circles (states). "Edges" are arrows (rules).
 - **Style:** How the elements look. Written a lot like CSS.
 - **Layout:** The rule for where elements go on the screen.
+- **Node / edge:** Cytoscape's words for a circle (state) and an arrow (rule).
+- **Selector:** The part of a style rule that says which elements it applies to, like "node.accepting".
+- **breadthfirst:** A layout that puts the start first, then everything one arrow away, then two, and so on.
+- **Fit:** Zoom and pan so the whole drawing is visible.
+- **Ghost node:** An invisible node used only so the start arrow has somewhere to come from.
 
 ## JavaScript
 
@@ -83,3 +88,8 @@ New terms, one plain-English line each. Grouped by topic.
 ## Architecture
 
 - **Separation of concerns:** Each file has one job, so you always know where to look.
+- **Conductor:** Our nickname for app.js. It doesn't do the work itself; it calls each file in the right order.
+
+## Architecture
+
+- **Stale data:** Information that's out of date, like a loaded machine that no longer matches the edited text.
