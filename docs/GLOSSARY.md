@@ -51,3 +51,11 @@ New terms, one plain-English line each. Grouped by topic.
 - **Elements:** The list of things to draw. "Nodes" are circles (states). "Edges" are arrows (rules).
 - **Style:** How the elements look. Written a lot like CSS.
 - **Layout:** The rule for where elements go on the screen.
+
+## JavaScript
+
+- **Set:** A list with no repeats. Adding "q0" twice keeps one.
+- **Map:** A lookup table: give it a key, get back a value.
+- **Result object:** A package a function hands back that says whether it worked (ok) and what it found.
+- **Event listener:** Code that waits for something to happen, like a button click, then runs.
+- **textContent:** Puts text on the page exactly as typed, so pasted text can never act as page code.

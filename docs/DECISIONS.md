@@ -63,3 +63,19 @@ Newest decisions go at the bottom.
 **Date:** Nov 21, 2026
 **Decision:** Tell GitHub Pages to skip its Jekyll site-builder.
 **Why:** We write plain HTML, so we don't need it. It can hide files starting with `_` and slows down deploys.
+
+## 11. The parser hands back a result instead of throwing errors
+
+**Decision:** Parser.parse() always returns { ok: true, machine, tests } or { ok: false, message }.
+**Why:** No hidden jumps. The caller just checks "ok", like a success path and a fault path.
+**Passed on:** Throwing errors like Python. Easy to forget to catch one and crash the page.
+
+## 12. Rules are stored as state → symbol → next states
+
+**Why:** JavaScript can't use a (state, symbol) pair as a lookup key the way Python can.
+**Passed on:** Text keys like "q0|0". Simpler, but they break if a state name contains "|".
+
+## 13. Copy Python's tiny quirks exactly
+
+**Decision:** Same "space" characters, same sort order, same handling of the invisible marker at the start of some files.
+**Why:** Python is the answer key. Small mismatches here would show up as confusing differences later.

@@ -29,7 +29,13 @@
                 test:
                 test: 1201
             </textarea>
-            <button id="load" type="button">Load machine</button>
+            <div class="actions">
+                <button id="load" type="button">Load machine</button>
+                <button id="choose-file" type="button" class="secondary">Open a .txt file…</button>
+                <!-- The browser's built-in file picker. Hidden; the button above opens it. -->
+                <input id="file-input" type="file" accept=".txt,text/plain" hidden>
+                <span id="file-name" class="file-name"></span>
+            </div>
         </section>
 
         <!-- 2. What the page found: a summary, or a list of problems -->

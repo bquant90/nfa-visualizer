@@ -37,6 +37,28 @@ button {
 }
 button:hover { background: #1e3a8a; }
 
+/* A lighter button for less important actions. */
+button.secondary {
+  background: white;
+  color: #1e40af;
+  border: 1px solid #1e40af;
+}
+button.secondary:hover { background: #eff6ff; }
+
+/* The row of buttons under the text box. */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.actions button { margin-top: 8px; }
+.file-name {
+  margin-top: 8px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
 /* The "What we found" box. Keeps line breaks and lines up columns. */
 .status {
   white-space: pre-wrap;
