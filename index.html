@@ -7,14 +7,48 @@
         <link rel="stylesheet" href="css/style.css">
     </head>
     <body>
-        <h1>Hello, NFA</h1>
-        <p>If you can see two circles joined by an arrow below, Cytoscape is working.</p>
+        <h1>NFA Visualizer</h1>
+        <p class="intro">Describe a machine below, then click <strong>Load machine</strong>.</p>
 
-        <!-- Cytoscape draws inside this box. -->
-         <div id="machine"></div>
+        <!-- 1. Where the user describes the machine -->
+        <section>
+            <h2>1. Describe your machine</h2>
+            <textarea id="source" spellcheck="false"># Accepts strings of 0s and 1s that end in "01"
+                alphabet: 0, 1
+                states: q0, q1, q2
+                start: q0
+                accepting: q2
 
-        <!-- Order matters: the library first, then the code that uses it. -->
+                rule: q0 -- 0 --> q0
+                rule: q0 -- 1 --> q0
+                rule: q0 -- 0 --> q1
+                rule: q1 -- 1 --> q2
+
+                test: 101
+                test: 0110
+                test:
+                test: 1201
+            </textarea>
+            <button id="load" type="button">Load machine</button>
+        </section>
+
+        <!-- 2. What the page found: a summary, or a list of problems -->
+        <section>
+            <h2>2. What we found</h2>
+            <div id="status" class="status">Nothing loaded yet.</div>
+        </section>
+
+        <!-- 3. The drawing. -->
+        <section>
+            <h2>3. The machine</h2>
+            <div id="machine">
+                <p class="placeholder">The drawing will appear here in Phase 3.</p>
+            </div>
+        </section>
+
+        <!-- Order matters: each file can only use the files loaded above it. -->
          <script src="lib/cytoscape.min.js"></script>
+         <script src="js/parser.js"></script>
          <script src="js/app.js"></script>
     </body>
 </html>

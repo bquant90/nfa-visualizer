@@ -28,6 +28,9 @@ New terms, one plain-English line each. Grouped by topic.
 - **Remote:** An online copy of your repo, like the one on GitHub.
 - **origin:** The standard nickname for your main remote.
 - **`git push -u`:** First upload. The `-u` remembers where to push, so after this, plain `git push` works.
+- **Deploy:** Publishing the latest version of the site. GitHub Pages deploys automatically after each push.
+- **Actions tab:** Where GitHub shows automatic jobs, like each Pages deploy, with a green check or red X.
+- **Case-sensitive:** Treats `A` and `a` as different. Web servers are, and Windows isn't, so keep file names lowercase.
 
 ## Web pages
 

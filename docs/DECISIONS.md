@@ -57,3 +57,9 @@ Newest decisions go at the bottom.
 
 **Decision:** GitHub Pages serves the repo's main folder as a website.
 **Why:** Free, no server, and it updates every time we upload changes.
+
+## 10. Add an empty `.nojekyll` file
+
+**Date:** Nov 21, 2026
+**Decision:** Tell GitHub Pages to skip its Jekyll site-builder.
+**Why:** We write plain HTML, so we don't need it. It can hide files starting with `_` and slows down deploys.
