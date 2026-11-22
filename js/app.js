@@ -3,6 +3,8 @@
 const App = (function () {
 
   // Grab the pieces of the page we need to talk to.
+  const presetSelect  = document.getElementById("preset");
+  const presetSummary = document.getElementById("preset-summary");
   const sourceBox     = document.getElementById("source");
   const loadButton    = document.getElementById("load");
   const chooseButton  = document.getElementById("choose-file");
@@ -100,7 +102,43 @@ const App = (function () {
 
     sourceBox.value = text;
     fileNameLabel.textContent = "Loaded from " + file.name;
+    forgetPreset();
     loadMachine();
+  }
+
+  // ---------- Examples ----------
+
+  // Fill the "Try an example" list from presets.js.
+  function fillPresetList() {
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "(your own machine)";
+    presetSelect.appendChild(placeholder);
+    for (const preset of Presets.list) {
+      const option = document.createElement("option");
+      option.value = preset.id;
+      option.textContent = preset.name;
+      presetSelect.appendChild(option);
+    }
+  }
+
+  // Put an example into the text box, then load it like pasted text
+  // (the same single path that opened files use).
+  function usePreset(id) {
+    const preset = Presets.find(id);
+    if (!preset) return;
+    presetSelect.value = id;
+    presetSummary.textContent = preset.summary;
+    sourceBox.value = preset.text;
+    fileNameLabel.textContent = "";
+    testInput.value = "";
+    loadMachine();
+  }
+
+  // Once the text no longer matches an example, stop claiming it does.
+  function forgetPreset() {
+    presetSelect.value = "";
+    presetSummary.textContent = "";
   }
 
   // Put text in the status box and color it green (ok) or red (error).
@@ -128,8 +166,7 @@ const App = (function () {
     const text = Parser.strip(rawText);
     testInput.value = text;
 
-    // 1. The engine records every step.  
-    // 2. Display builds the tape and table.
+    // 1. The engine records every step.  2. Display builds the tape and table.
     // 3. A player starts at step 0; the buttons move it back and forth.
     const result = Engine.run(current.machine, text);
     Display.showTape(tapeBox, result, headsUpBox, Explain.headsUp(current.machine, result));
@@ -214,8 +251,20 @@ const App = (function () {
   stepButton.addEventListener("click",  () => player && player.next());
   endButton.addEventListener("click",   () => player && player.end());
 
-  // Once the user edits the text, it no longer matches the file they opened.
-  sourceBox.addEventListener("input", () => { fileNameLabel.textContent = ""; });
+  presetSelect.addEventListener("change", () => {
+    if (presetSelect.value) usePreset(presetSelect.value);
+  });
+
+  // Once the user edits the text, it no longer matches the file or example they opened.
+  sourceBox.addEventListener("input", () => {
+    fileNameLabel.textContent = "";
+    forgetPreset();
+  });
+
+  // When the page opens: fill the example list and show the first example,
+  // so visitors see a working machine right away.
+  fillPresetList();
+  usePreset(Presets.list[0].id);
 
   // Nothing else needs to reach inside App yet.
   return {};

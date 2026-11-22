@@ -236,3 +236,9 @@ details summary h2 { display: inline; margin: 0; }
 .status .verdict-title { display: block; font-weight: 700; font-size: 17px; }
 .status .verdict-detail { display: block; margin-top: 4px; }
 #verdict { font-family: system-ui, sans-serif; white-space: normal; }
+
+/* The "Try an example" row. */
+.preset-row { margin-bottom: 4px; }
+.preset-row select { padding: 6px 8px; font-size: 15px; border-radius: 6px; border: 1px solid #ccc; }
+#preset-summary { margin: 4px 0 10px; }
+#preset-summary:empty { display: none; }

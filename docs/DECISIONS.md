@@ -193,3 +193,11 @@ Newest decisions go at the bottom.
 
 **Order:** guess dies but gets refilled → splits → dead ends → merges → "nothing special."
 **Why:** The most confusing event is explained first.
+
+## 40. The verdict is a headline plus one plain-English reason
+
+**Why:** Each engine reason (accepted, no accepting state, stuck, not in alphabet) gets its own sentence. Strings over 24 characters are named by length instead of quoted.
+
+## 41. Unknown characters get a heads-up as soon as a string is run
+
+**Why:** Meets the requirement to say so clearly. It points at the problem ("watch what happens") without revealing the ending.

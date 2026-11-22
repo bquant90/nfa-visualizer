@@ -8,26 +8,22 @@
 </head>
 <body>
   <h1>NFA Visualizer</h1>
-  <p class="intro">Describe a machine below, then click <strong>Load machine</strong>.</p>
+  <p class="intro">
+    Pick an example below (or write your own), then type a string and step through it
+    to watch the machine decide whether to accept it.
+  </p>
 
   <!-- 1. Where the user describes the machine -->
   <section>
     <h2>1. Describe your machine</h2>
-    <textarea id="source" spellcheck="false"># Accepts strings of 0s and 1s that end in "01"
-alphabet: 0, 1
-states: q0, q1, q2
-start: q0
-accepting: q2
-
-rule: q0 -- 0 --> q0
-rule: q0 -- 1 --> q0
-rule: q0 -- 0 --> q1
-rule: q1 -- 1 --> q2
-
-test: 101
-test: 0110
-test:
-test: 1201</textarea>
+    <div class="actions preset-row">
+      <label for="preset">Try an example:</label>
+      <!-- app.js fills this list from presets.js -->
+      <select id="preset"></select>
+    </div>
+    <p id="preset-summary" class="legend"></p>
+    <!-- Filled with the first example when the page opens -->
+    <textarea id="source" spellcheck="false"></textarea>
     <div class="actions">
       <button id="load" type="button">Load machine</button>
       <button id="choose-file" type="button" class="secondary">Open a .txt file…</button>
@@ -119,6 +115,7 @@ test: 1201</textarea>
   <script src="js/explain.js"></script>
   <script src="js/display.js"></script>
   <script src="js/player.js"></script>
+  <script src="js/presets.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
