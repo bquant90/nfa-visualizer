@@ -70,6 +70,50 @@ button.secondary:hover { background: #eff6ff; }
 .status.ok    { background: #ecfdf5; border: 1px solid #10b981; }
 .status.error { background: #fef2f2; border: 1px solid #ef4444; color: #991b1b; }
 
+/* The box where users type a test string. */
+#test-string {
+  margin-top: 8px;
+  padding: 8px 10px;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  min-width: 260px;
+}
+
+/* Small buttons for the test strings from the machine description. */
+.chips { margin: 10px 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.chips:empty { display: none; }
+.chips .label { color: #6b7280; font-size: 14px; align-self: center; }
+button.chip {
+  margin: 0;
+  padding: 4px 10px;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 14px;
+  background: #eff6ff;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+}
+button.chip:hover { background: #dbeafe; }
+
+/* The table of recorded steps. */
+.step-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 14px;
+}
+.step-table th, .step-table td {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: top;
+}
+.step-table th { background: #f9fafb; }
+.step-table td.mono { font-family: Consolas, "Courier New", monospace; }
+.step-table .bad { color: #b91c1c; font-weight: 600; }
+.step-note { color: #6b7280; font-size: 14px; margin-top: 8px; }
+
 /* Cytoscape needs a box with a real height, or it draws nothing */
 #machine {
   height: 300px;

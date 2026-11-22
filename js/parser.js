@@ -224,5 +224,5 @@ const Parser = (function () {
     ];
   }
 
-  return { parse, describe, formatSet, sorted, ruleCount };
+  return { parse, describe, formatSet, sorted, ruleCount, strip };
 })();

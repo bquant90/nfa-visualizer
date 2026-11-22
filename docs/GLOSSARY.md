@@ -68,3 +68,18 @@ New terms, one plain-English line each. Grouped by topic.
 - **Regression:** Something that used to work breaking after a change. Re-running saved test files catches it.
 - **Answer key:** The trusted version we compare against. Here, the Python file.
 - **Loop:** Code that repeats a step for each item in a list, like running Python on every test file.
+
+## The machine (NFA)
+
+- **Possible states:** The set of every state the machine could be in right now. All of them move together on each character.
+- **Dead end:** A possible state with no arrow for the character being read. It drops out of the set.
+
+## Testing
+
+- **Trace:** A line-by-line record of what the machine did at each step.
+- **Diff / compare view:** Two texts side by side with differences highlighted. In VS Code: "Compare New Untitled Text Files."
+- **Fuzz testing:** Throwing lots of random inputs at two versions to see if they ever disagree.
+
+## Architecture
+
+- **Separation of concerns:** Each file has one job, so you always know where to look.

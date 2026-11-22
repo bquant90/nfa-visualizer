@@ -89,3 +89,16 @@ Newest decisions go at the bottom.
 ## 15. One test file per scenario, with the expected result written inside
 
 **Why:** File names say what each one tests. "# Expected:" comments make each file explain itself. The parser stops at the first error, so one big file could only test one mistake.
+
+## 16. The engine tracks the set of possible states
+
+**Why:** Same as the Python version. The set can never be bigger than the number of states, so it stays fast on long strings.
+**Passed on:** Following each path one at a time (can multiply into billions). Converting to a DFA first (builds a different machine than the user drew).
+
+## 17. Each step records facts: before, after, arrows used, dead ends
+
+**Why:** The display can light up the exact arrows. explain.js can describe choices and dead ends. The final answer keeps its reason (accepted, no accepting state, stuck, not in alphabet).
+
+## 18. A separate answer-key page (check.html + js/check.js)
+
+**Why:** Prints the exact Python format, including --trace, for line-by-line comparison. Keeps testing tools off the visitor page.
