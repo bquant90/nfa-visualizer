@@ -1,0 +1,6 @@
+# BROKEN: "foo" is not a label the machine understands.
+# Expected: Error: line 6: unknown label 'foo' (expected alphabet, states, start, accepting, rule, or test)
+alphabet: 0
+states: q0
+start: q0
+foo: bar

@@ -59,3 +59,5 @@ New terms, one plain-English line each. Grouped by topic.
 - **Result object:** A package a function hands back that says whether it worked (ok) and what it found.
 - **Event listener:** Code that waits for something to happen, like a button click, then runs.
 - **textContent:** Puts text on the page exactly as typed, so pasted text can never act as page code.
+- **async / await:** Lets code wait for something slow, like reading a file, without freezing the page.
+- **UTF-8:** The standard way computers store text as bytes. A file that breaks its rules is "not valid UTF-8."

@@ -1,0 +1,6 @@
+# BROKEN: the rule on line 6 is missing where it goes.
+# Expected: Error: line 6: a rule needs 3 parts (from state, symbol, to state) but found 2 in 'q0 -- 0 -->'
+alphabet: 0
+states: q0
+start: q0
+rule: q0 -- 0 -->

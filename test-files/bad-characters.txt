@@ -1,0 +1,17 @@
+# GOOD machine, but some test strings use characters outside the alphabet.
+# Python says "Rejected" for these. The web page will say WHY.
+alphabet: 0, 1
+states: q0, q1, q2
+start: q0
+accepting: q2
+
+rule: q0 -- 0 --> q0
+rule: q0 -- 1 --> q0
+rule: q0 -- 0 --> q1
+rule: q1 -- 1 --> q2
+
+test: 001
+test: 0201
+test: 01a
+test: 0 1
+test: 2

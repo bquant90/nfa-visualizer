@@ -1,0 +1,21 @@
+# GOOD: accepts strings whose third-to-last character is 1.
+# A classic NFA: it "guesses" when the last three characters begin.
+alphabet: 0, 1
+states: q0, q1, q2, q3
+start: q0
+accepting: q3
+
+rule: q0 -- 0 --> q0
+rule: q0 -- 1 --> q0
+rule: q0 -- 1 --> q1
+rule: q1 -- 0 --> q2
+rule: q1 -- 1 --> q2
+rule: q2 -- 0 --> q3
+rule: q2 -- 1 --> q3
+
+test: 100
+test: 0100
+test: 111
+test: 1011
+test: 11
+test:

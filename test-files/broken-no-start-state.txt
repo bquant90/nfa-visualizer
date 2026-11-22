@@ -1,0 +1,5 @@
+# BROKEN: there is no "start:" line at all.
+# Expected: Error: expected exactly one start state, found 0
+alphabet: 0
+states: q0
+accepting: q0

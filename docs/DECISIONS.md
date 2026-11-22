@@ -79,3 +79,9 @@ Newest decisions go at the bottom.
 
 **Decision:** Same "space" characters, same sort order, same handling of the invisible marker at the start of some files.
 **Why:** Python is the answer key. Small mismatches here would show up as confusing differences later.
+
+## 14. Opened files go into the text box, then load like pasted text
+
+**Why:** One path into the parser, so files and pasted text can never behave differently. Users can see and fix what they loaded.
+**Passed on:** Sending the file straight to the parser. Less visible, and two paths to keep in sync.
+**Also:** Files that aren't proper UTF-8 text are refused with the same message as Python.

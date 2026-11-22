@@ -1,12 +1,15 @@
-# ends in 01
+# GOOD: accepts strings of 0s and 1s that end in "01".
+# Nondeterministic: from q0, reading 0 can stay in q0 OR move to q1.
 alphabet: 0, 1
 states: q0, q1, q2
 start: q0
 accepting: q2
+
 rule: q0 -- 0 --> q0
 rule: q0 -- 1 --> q0
 rule: q0 -- 0 --> q1
 rule: q1 -- 1 --> q2
+
 test: 101
 test: 0110
 test:

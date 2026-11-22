@@ -1,0 +1,17 @@
+# GOOD: accepts strings of a's and b's that start with "a".
+# Written in a different style on purpose: capital labels, spaces
+# instead of commas, and rules in comma form. All must still work.
+ALPHABET: a b
+States: s0 s1
+Start: s0
+Accepting: s1
+
+Rule: s0, a, s1
+Rule: s1, a, s1
+Rule: s1, b, s1
+
+   # An indented comment is still a comment.
+Test: abba
+Test: a
+Test: ba
+Test:

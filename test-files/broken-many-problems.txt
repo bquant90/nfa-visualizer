@@ -1,0 +1,15 @@
+# BROKEN: several mistakes at once. All of them are reported together,
+# and the repeated mistake (state 'zz') is only listed once.
+# Expected: Error: this machine description has problems:
+#   - start state 'q9' is not in the state list
+#   - accepting state 'q7' is not in the state list
+#   - a rule leads to unknown state 'qx'
+#   - a rule starts from unknown state 'zz'
+#   - a rule reads '2', which is not in the alphabet
+alphabet: 0
+states: q0, q1
+start: q9
+accepting: q1, q7
+rule: zz -- 0 --> q1
+rule: zz -- 2 --> q1
+rule: q0 -- 0 --> qx

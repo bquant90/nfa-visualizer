@@ -1,0 +1,5 @@
+# BROKEN: a machine needs exactly one start state.
+# Expected: Error: expected exactly one start state, found 2
+alphabet: 0
+states: q0, q1
+start: q0, q1

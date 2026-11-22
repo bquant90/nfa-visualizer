@@ -1,0 +1,17 @@
+# GOOD: accepts strings with an even number of 1s.
+# The start state is also accepting, so the empty string is accepted.
+alphabet: 0, 1
+states: even, odd
+start: even
+accepting: even
+
+rule: even -- 0 --> even
+rule: even -- 1 --> odd
+rule: odd -- 0 --> odd
+rule: odd -- 1 --> even
+
+test:
+test: 11
+test: 101
+test: 1
+test: 0110
