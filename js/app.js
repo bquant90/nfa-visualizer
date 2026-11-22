@@ -19,6 +19,7 @@ const App = (function () {
   const rearrangeBtn  = document.getElementById("rearrange");
   const fitButton     = document.getElementById("fit");
   const tapeBox       = document.getElementById("tape");
+  const headsUpBox    = document.getElementById("heads-up");
   const stepLabel     = document.getElementById("step-label");
   const startButton   = document.getElementById("btn-start");
   const backButton    = document.getElementById("btn-back");
@@ -131,7 +132,7 @@ const App = (function () {
     // 2. Display builds the tape and table.
     // 3. A player starts at step 0; the buttons move it back and forth.
     const result = Engine.run(current.machine, text);
-    Display.showTape(tapeBox, result);
+    Display.showTape(tapeBox, result, headsUpBox, Explain.headsUp(current.machine, result));
     Display.showStepTable(stepsBox, result, index => player.goTo(index));
 
     // The verdict stays hidden until the last step has been shown once,
@@ -143,7 +144,9 @@ const App = (function () {
         Display.showStep(result, index, stepLabel);
         Display.showCaption(captionBox, Explain.step(current.machine, result, index));
         if (player.atEnd()) revealed = true;
-        if (revealed) Display.showVerdict(verdictBox, result);
+        if (revealed) {
+          Display.showVerdict(verdictBox, result.accepted, Explain.verdict(current.machine, result));
+        }
         else Display.showPending(verdictBox);
         updateButtons();
       },
@@ -162,7 +165,7 @@ const App = (function () {
   // Throw away the last run: highlights, tape, table, verdict, buttons.
   function forgetRun() {
     player = null;
-    Display.clearRun(tapeBox, stepLabel);
+    Display.clearRun(tapeBox, headsUpBox, stepLabel);
     Display.showCaption(captionBox, null);
     stepsBox.replaceChildren();
     verdictBox.hidden = true;

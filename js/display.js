@@ -266,13 +266,17 @@ const Display = (function () {
   let tableRows = [];   // one table row per recorded step
 
   // Show the final answer in a green or red box.
-  // The wording is temporary. Phase 5 replaces the reason codes with plain English.
-  function showVerdict(box, result) {
-    const label = result.text === "" ? "(empty string)" : `"${result.text}"`;
-    const answer = result.accepted ? "Accepted" : "Rejected";
+  // words = { title, detail } from Explain.verdict().
+  function showVerdict(box, accepted, words) {
     box.hidden = false;
-    box.className = "status " + (result.accepted ? "ok" : "error");
-    box.textContent = `${label} is ${answer}   (reason code: ${result.reason})`;
+    box.className = "status " + (accepted ? "ok" : "error");
+    const title = document.createElement("span");
+    title.className = "verdict-title";
+    title.textContent = words.title;
+    const detail = document.createElement("span");
+    detail.className = "verdict-detail";
+    detail.textContent = words.detail;
+    box.replaceChildren(title, detail);
   }
 
   // While stepping, the verdict box just says the answer is coming.
@@ -283,9 +287,13 @@ const Display = (function () {
   }
 
   // Build the tape: the test string, one box per character.
-  function showTape(container, result) {
+  // Characters outside the alphabet are outlined in red from the start, and
+  // headsUp (text from Explain.headsUp, or null) is shown in noteBox.
+  function showTape(container, result, noteBox, headsUp) {
     container.replaceChildren();
     tapeCells = [];
+    noteBox.hidden = !headsUp;
+    noteBox.textContent = headsUp || "";
     const characters = Array.from(result.text);
     if (characters.length === 0) {
       const note = document.createElement("span");
@@ -298,6 +306,7 @@ const Display = (function () {
       const cell = document.createElement("span");
       cell.className = "cell";
       cell.textContent = ch === " " ? "␣" : ch;   // make spaces visible
+      if (result.outsideAlphabet.includes(ch)) cell.dataset.foreign = "yes";
       container.appendChild(cell);
       tapeCells.push(cell);
     }
@@ -378,7 +387,7 @@ const Display = (function () {
       if (i < step.position - 1) state = "done";
       else if (i === step.position - 1) state = "current";
       else if (stoppedEarly) state = "never";
-      cell.className = "cell " + state;
+      cell.className = "cell " + state + (cell.dataset.foreign ? " foreign" : "");
     });
 
     // The table: mark the matching row.
@@ -400,9 +409,10 @@ const Display = (function () {
   }
 
   // Remove every trace of the last run (used when the machine changes).
-  function clearRun(tapeBox, labelBox) {
+  function clearRun(tapeBox, noteBox, labelBox) {
     if (cy) cy.elements().removeClass("current taken dead winner loser");
     tapeBox.replaceChildren();
+    noteBox.hidden = true;
     tapeCells = [];
     tableRows = [];
     labelBox.textContent = "";

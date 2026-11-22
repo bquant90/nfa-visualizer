@@ -182,5 +182,14 @@ Newest decisions go at the bottom.
 
 ## 37. Captions: "what + why", capped in length
 
-**Why:** Max two sentences. Lists cut off after 4 names ("…and 9 more"). Busy steps get summarized. Full detail stays in the table.
+**Why:** One "what" sentence, plus a "why" with at most two facts (most important first). Name lists cut off after 4 ("…and 9 more"). Full detail stays in the table.
 **Passed on:** Plain "what" only. It has the same length problem, and loses the "why."
+
+## 38. app.js asks explain.js for words, then hands them to display.js
+
+**Why:** The display never depends on the wording, and the wording never depends on the display. Either can change alone (another language, a different voice).
+
+## 39. The "why" follows a fixed priority
+
+**Order:** guess dies but gets refilled → splits → dead ends → merges → "nothing special."
+**Why:** The most confusing event is explained first.

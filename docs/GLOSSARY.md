@@ -96,3 +96,4 @@ New terms, one plain-English line each. Grouped by topic.
 - **Stale data:** Information that's out of date, like a loaded machine that no longer matches the edited text.
 - **Reusable component:** A piece that knows nothing about the project it's in (like player.js), so another project can use it unchanged.
 - **Callback:** A function you hand to another piece of code to run later, like onShow given to the player.
+- **Layer independence:** Two layers that never call each other directly. The conductor (app.js) passes information between them.

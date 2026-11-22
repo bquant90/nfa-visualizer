@@ -4,9 +4,12 @@
 // facts the engine recorded and picks words for them. That means the
 // wording can change freely without any risk of breaking the logic.
 //
-// Explain.step(machine, result, index) hands back two pieces of text:
-//   { what: "Read '0'. The machine could now be in q0 or q1.",
-//     why:  "q0 has 2 arrows for '0' (to q0 and q1), so the machine follows both." }
+// Three things it can explain:
+//   Explain.step(machine, result, index) -> { what, why } for one step, e.g.
+//     { what: "Read '0'. The machine could now be in q0 or q1.",
+//       why:  "q0 has 2 arrows for '0' (to q0 and q1), so the machine follows both." }
+//   Explain.verdict(machine, result)     -> { title, detail } for the final answer
+//   Explain.headsUp(machine, result)     -> a warning about unknown characters, or null
 //
 // Length rules, so captions stay short even for huge machines:
 //   - "what" is one sentence; "why" gives at most two facts.
@@ -98,8 +101,7 @@ const Explain = (function () {
       const state = refilled[0];
       out.push(`${state} has no arrow for ${sym}, so its own guess is dropped, ` +
                `but ${cameFrom.get(state)[0]}'s arrow brings a new guess to ${state}.`);
-    } 
-    else if (refilled.length > 1) {
+    } else if (refilled.length > 1) {
       out.push(`${list(refilled, "and")} have no arrow for ${sym}, but other arrows ` +
                `bring new guesses back to them.`);
     }
@@ -110,8 +112,7 @@ const Explain = (function () {
       const all = tos.length === 2 ? "both" : "all of them";
       out.push(`${from} has ${tos.length} arrows for ${sym} (to ${list(tos, "and")}), ` +
                `so the machine follows ${all}.`);
-    } 
-    else if (splits.length > 1) {
+    } else if (splits.length > 1) {
       out.push(`${splits.length} states have more than one arrow for ${sym}, ` +
                `so their guesses split.`);
     }
@@ -119,11 +120,9 @@ const Explain = (function () {
     // 3. Dead ends: guesses with no arrow for this character.
     if (dropped.length === 1) {
       out.push(`${dropped[0]} has no arrow for ${sym}, so that guess is dropped.`);
-    } 
-    else if (dropped.length > 1 && dropped.length <= MAX_NAMES) {
+    } else if (dropped.length > 1 && dropped.length <= MAX_NAMES) {
       out.push(`${list(dropped, "and")} have no arrow for ${sym}, so those guesses are dropped.`);
-    } 
-    else if (dropped.length > MAX_NAMES) {
+    } else if (dropped.length > MAX_NAMES) {
       out.push(`${dropped.length} guesses have no arrow for ${sym} and are dropped.`);
     }
 
@@ -132,8 +131,7 @@ const Explain = (function () {
       const [to, froms] = merges[0];
       const both = froms.length === 2 ? "both" : "all";
       out.push(`${list(froms, "and")} ${both} lead to ${to}, so those guesses join into one.`);
-    } 
-    else if (merges.length > 1) {
+    } else if (merges.length > 1) {
       out.push("Some guesses landed on the same state, so they join together.");
     }
 
@@ -144,13 +142,98 @@ const Explain = (function () {
         out.push(from === to
           ? `${from}'s arrow for ${sym} loops back to itself.`
           : `${from} has one arrow for ${sym}, and it leads to ${to}.`);
-      } 
-      else {
+      } else {
         out.push(`Each possible state follows its one arrow for ${sym}.`);
       }
     }
     return out;
   }
 
-  return { step };
+  // ---------- The final answer ----------
+
+  // How to name the tested string in a sentence. Long strings get a short name.
+  function nameOf(text) {
+    const length = Array.from(text).length;
+    if (length === 0) return "The empty string";
+    if (length <= 24) return `"${text}"`;
+    return `This ${length}-character string`;
+  }
+
+  // "a double circle" / "double circles", for 1 or more states.
+  function doubleCircles(count) {
+    return count === 1 ? "a double circle" : "double circles";
+  }
+
+  function verdict(machine, result) {
+    const name = nameOf(result.text);
+    const last = result.steps[result.steps.length - 1];
+    const empty = result.text === "";
+
+    if (result.accepted) {
+      const w = result.winners;
+      const isAre = w.length === 1 ? "is" : "are";
+      let detail = empty
+        ? `With nothing to read, the machine stays in ${list(last.after)}, ` +
+          `and ${list(w, "and")} ${isAre} ${doubleCircles(w.length)} (an accepting state).`
+        : `After reading every character, the machine could be in ${list(last.after)}, ` +
+          `and ${list(w, "and")} ${isAre} ${doubleCircles(w.length)} (an accepting state).`;
+      // Some guesses finished elsewhere. That's fine: one winner is enough.
+      if (last.after.length > w.length) detail += " Only one guess has to finish on a double circle.";
+      return { title: `✓ Accepted. ${name} is accepted.`, detail };
+    }
+
+    const title = `✗ Rejected. ${name} is rejected.`;
+
+    if (result.reason === "no-accepting-state") {
+      const states = last.after;
+      const where = empty
+        ? `With nothing to read, the machine stays in ${states[0]}`
+        : `The machine read every character and finished in ${list(states)}`;
+      const ending = states.length === 1
+        ? `, which isn't a double circle (accepting state).`
+        : `, but none of those are double circles (accepting states).`;
+      return { title, detail: where + ending };
+    }
+
+    const stuckAt = last.position;   // which character it got stuck on (1 = first)
+    const neverRead = result.unread
+      ? ` It never read the rest of the string.`
+      : "";
+
+    if (result.reason === "not-in-alphabet") {
+      const unknown = result.outsideAlphabet.map(quoteChar);
+      const what = unknown.length === 1
+        ? `It contains ${unknown[0]}, which isn't one of this machine's characters`
+        : `It contains ${list(unknown, "and")}, which aren't characters this machine knows`;
+      return {
+        title,
+        detail: `${what} (it only knows ${list(Parser.sorted(machine.alphabet), "and")}). ` +
+                `The machine got stuck as soon as it reached character ${stuckAt}.` + neverRead,
+      };
+    }
+
+    // reason === "stuck": a real character, but no arrow for it.
+    return {
+      title,
+      detail: `The machine got stuck at character ${stuckAt} (${quoteChar(last.symbol)}): ` +
+              `none of its possible states had an arrow for it, so it couldn't finish reading.` +
+              neverRead,
+    };
+  }
+
+  // A warning shown on the tape as soon as a string is run, if it contains
+  // characters the machine doesn't know. Returns null when there's nothing to warn about.
+  function headsUp(machine, result) {
+    const unknown = result.outsideAlphabet.map(quoteChar);
+    if (unknown.length === 0) return null;
+    const these = unknown.length === 1
+      ? `${unknown[0]} isn't one of this machine's characters`
+      : `${list(unknown, "and")} aren't characters this machine knows`;
+    const where = unknown.length === 1
+      ? "It's outlined in red on the tape. Watch what happens when the machine reaches it."
+      : "They're outlined in red on the tape. Watch what happens when the machine reaches one.";
+    return `Heads up: ${these} (it only knows ${list(Parser.sorted(machine.alphabet), "and")}). ` + where;
+  }
+
+  return { step, verdict, headsUp };
 })();
