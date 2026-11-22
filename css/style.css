@@ -1,16 +1,162 @@
-/* style.css: colors, fonts and spacing for the whole page. */
+/* style.css: colors, fonts and spacing for the whole page.
+ *
+ * How the colors work:
+ *   Every color is a named "variable" (like --text or --node-fill) defined once
+ *   at the top. The light theme is the default. The dark theme just redefines the
+ *   same names. Everything below uses the names, never raw colors, so switching
+ *   themes is one change. display.js reads the --node / --edge / --current ...
+ *   variables too, so the Cytoscape drawing follows the theme as well.
+ */
 
+/* ===================== 1. Colors: light theme (default) ===================== */
+:root {
+  color-scheme: light;               /* tells the browser to style scrollbars etc. to match */
+
+  /* Page */
+  --bg: #ffffff;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --border: #cbd5e1;
+  --surface: #f3f4f6;                /* grey boxes */
+  --input-bg: #ffffff;
+
+  /* Buttons */
+  --primary: #1e40af;
+  --primary-hover: #1e3a8a;
+  --primary-text: #ffffff;
+  --secondary-bg: #ffffff;
+  --secondary-text: #1e40af;
+  --secondary-hover: #eff6ff;
+  --chip-bg: #eff6ff;
+  --chip-border: #bfdbfe;
+  --chip-hover: #dbeafe;
+
+  /* Messages */
+  --ok-bg: #ecfdf5;   --ok-border: #10b981;   --ok-text: #064e3b;
+  --err-bg: #fef2f2;  --err-border: #ef4444;  --err-text: #991b1b;
+  --caption-bg: #fffbeb;  --caption-edge: #d97706;  --caption-why: #4b5563;
+
+  /* Table */
+  --line: #e5e7eb;
+  --th-bg: #f9fafb;
+  --row-hover: #f9fafb;
+  --row-current: #fef3c7;
+
+  /* Tape */
+  --cell-bg: #ffffff;
+  --cell-done-bg: #f3f4f6;
+  --cell-done-text: #9ca3af;
+
+  /* The drawing (read by display.js) */
+  --canvas: #fcfcfd;
+  --node-fill: #ffffff;    --node-border: #334155;    --node-text: #1f2937;
+  --edge: #64748b;         --edge-text: #1f2937;
+  --current-fill: #fde68a; --current-border: #b45309; --current-text: #1f2937;
+  --taken: #ea580c;        --taken-text: #c2410c;
+  --dead: #dc2626;
+  --winner-fill: #bbf7d0;  --winner-border: #15803d;  --winner-text: #14532d;
+  --loser-fill: #fecaca;   --loser-border: #b91c1c;   --loser-text: #7f1d1d;
+}
+
+/* ===================== 2. Colors: dark theme ===================== */
+/* theme.js sets data-theme="dark" on the page when dark mode is on. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #0f172a;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --border: #475569;
+  --surface: #1e293b;
+  --input-bg: #111827;
+
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --primary-text: #ffffff;
+  --secondary-bg: #0f172a;
+  --secondary-text: #93c5fd;
+  --secondary-hover: #1e293b;
+  --chip-bg: #1e293b;
+  --chip-border: #334155;
+  --chip-hover: #273449;
+
+  --ok-bg: #052e1c;   --ok-border: #10b981;   --ok-text: #a7f3d0;
+  --err-bg: #3b0d0d;  --err-border: #f87171;  --err-text: #fecaca;
+  --caption-bg: #2a2110;  --caption-edge: #f59e0b;  --caption-why: #cbd5e1;
+
+  --line: #334155;
+  --th-bg: #1e293b;
+  --row-hover: #1e293b;
+  --row-current: #3a2e0b;
+
+  --cell-bg: #1e293b;
+  --cell-done-bg: #0f172a;
+  --cell-done-text: #64748b;
+
+  --canvas: #111827;
+  --node-fill: #1e293b;    --node-border: #94a3b8;    --node-text: #e2e8f0;
+  --edge: #94a3b8;         --edge-text: #e2e8f0;
+  --current-fill: #fcd34d; --current-border: #f59e0b; --current-text: #1f2937;
+  --taken: #fb923c;        --taken-text: #fdba74;
+  --dead: #f87171;
+  --winner-fill: #4ade80;  --winner-border: #22c55e;  --winner-text: #052e16;
+  --loser-fill: #f87171;   --loser-border: #ef4444;   --loser-text: #450a0a;
+}
+
+/* ===================== 3. Page layout ===================== */
 body {
   font-family: system-ui, sans-serif;
   max-width: 800px;
-  margin: 40px auto;
-  padding: 0 16px;
-  color: #1f2937;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  background: var(--bg);
+  color: var(--text);
 }
 
-h2 {
-  font-size: 1.1rem;
-  margin-top: 28px;
+/* Title on the left, theme button on the right. */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.page-header h1 { margin: 8px 0; }
+
+h2 { font-size: 1.1rem; margin-top: 28px; }
+
+.legend { color: var(--muted); font-size: 14px; margin-top: 8px; }
+
+/* ===================== 4. Buttons and inputs ===================== */
+button {
+  margin-top: 8px;
+  padding: 8px 16px;
+  font-size: 15px;
+  border: 1px solid var(--primary);
+  border-radius: 6px;
+  background: var(--primary);
+  color: var(--primary-text);
+  cursor: pointer;
+}
+button:hover { background: var(--primary-hover); }
+
+/* A lighter button for less important actions. */
+button.secondary {
+  background: var(--secondary-bg);
+  color: var(--secondary-text);
+  border-color: var(--secondary-text);
+}
+button.secondary:hover { background: var(--secondary-hover); }
+
+/* Buttons that can't be used right now: faded, and no hover change. */
+button:disabled { opacity: 0.4; cursor: default; }
+button:disabled:hover { background: var(--primary); }
+button.secondary:disabled:hover { background: var(--secondary-bg); }
+
+textarea, input[type="text"], select {
+  background: var(--input-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
 }
 
 /* The box where users type or paste a machine. */
@@ -21,31 +167,10 @@ h2 {
   font-family: Consolas, "Courier New", monospace;
   font-size: 14px;
   padding: 10px;
-  border: 1px solid #ccc;
   border-radius: 8px;
 }
 
-button {
-  margin-top: 8px;
-  padding: 8px 16px;
-  font-size: 15px;
-  border: none;
-  border-radius: 6px;
-  background: #1e40af;
-  color: white;
-  cursor: pointer;
-}
-button:hover { background: #1e3a8a; }
-
-/* A lighter button for less important actions. */
-button.secondary {
-  background: white;
-  color: #1e40af;
-  border: 1px solid #1e40af;
-}
-button.secondary:hover { background: #eff6ff; }
-
-/* The row of buttons under the text box. */
+/* A row of buttons and controls that wraps onto the next line if needed. */
 .actions {
   display: flex;
   align-items: center;
@@ -53,22 +178,13 @@ button.secondary:hover { background: #eff6ff; }
   flex-wrap: wrap;
 }
 .actions button { margin-top: 8px; }
-.file-name {
-  margin-top: 8px;
-  color: #6b7280;
-  font-size: 14px;
-}
+.file-name { margin-top: 8px; color: var(--muted); font-size: 14px; }
 
-/* The "What we found" box. Keeps line breaks and lines up columns. */
-.status {
-  white-space: pre-wrap;
-  font-family: Consolas, "Courier New", monospace;
-  padding: 12px;
-  border-radius: 8px;
-  background: #f3f4f6;
-}
-.status.ok    { background: #ecfdf5; border: 1px solid #10b981; }
-.status.error { background: #fef2f2; border: 1px solid #ef4444; color: #991b1b; }
+/* The "Try an example" row. */
+.preset-row { margin-bottom: 4px; }
+.preset-row select { padding: 6px 8px; font-size: 15px; }
+#preset-summary { margin: 4px 0 10px; }
+#preset-summary:empty { display: none; }
 
 /* The box where users type a test string. */
 #test-string {
@@ -76,44 +192,71 @@ button.secondary:hover { background: #eff6ff; }
   padding: 8px 10px;
   font-family: Consolas, "Courier New", monospace;
   font-size: 15px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
   min-width: 260px;
 }
 
 /* Small buttons for the test strings from the machine description. */
 .chips { margin: 10px 0; display: flex; flex-wrap: wrap; gap: 6px; }
 .chips:empty { display: none; }
-.chips .label { color: #6b7280; font-size: 14px; align-self: center; }
+.chips .label { color: var(--muted); font-size: 14px; align-self: center; }
 button.chip {
   margin: 0;
   padding: 4px 10px;
   font-family: Consolas, "Courier New", monospace;
   font-size: 14px;
-  background: #eff6ff;
-  color: #1e40af;
-  border: 1px solid #bfdbfe;
+  background: var(--chip-bg);
+  color: var(--secondary-text);
+  border: 1px solid var(--chip-border);
 }
-button.chip:hover { background: #dbeafe; }
+button.chip:hover { background: var(--chip-hover); }
 
-/* The table of recorded steps. */
-.step-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 12px;
-  font-size: 14px;
-}
-.step-table th, .step-table td {
-  text-align: left;
-  padding: 6px 8px;
-  border-bottom: 1px solid #e5e7eb;
-  vertical-align: top;
-}
-.step-table th { background: #f9fafb; }
-.step-table td.mono { font-family: Consolas, "Courier New", monospace; }
-.step-table .bad { color: #b91c1c; font-weight: 600; }
-.step-note { color: #6b7280; font-size: 14px; margin-top: 8px; }
+/* The theme switch in the top-right corner. */
+.theme-toggle { margin: 0; padding: 6px 12px; font-size: 14px; white-space: nowrap; }
 
+/* ===================== 5. Message boxes ===================== */
+/* "What we found" and the verdict. Keeps line breaks and lines up columns. */
+.status {
+  white-space: pre-wrap;
+  font-family: Consolas, "Courier New", monospace;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid transparent;
+  overflow-x: auto;                  /* long lines scroll instead of breaking the page */
+}
+.status.ok      { background: var(--ok-bg);  border-color: var(--ok-border);  color: var(--ok-text); }
+.status.error   { background: var(--err-bg); border-color: var(--err-border); color: var(--err-text); }
+.status.pending { color: var(--muted); }
+
+/* The verdict: a bold headline, then the reason underneath. */
+#verdict { font-family: system-ui, sans-serif; white-space: normal; }
+.status .verdict-title  { display: block; font-weight: 700; font-size: 17px; }
+.status .verdict-detail { display: block; margin-top: 4px; }
+
+/* The "heads up" warning under the tape. */
+.heads-up {
+  margin: 8px 0 0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--err-bg);
+  color: var(--err-text);
+  font-size: 15px;
+}
+
+/* The caption under the playback buttons. */
+.caption {
+  border-left: 4px solid var(--caption-edge);
+  background: var(--caption-bg);
+  padding: 10px 14px;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 12px;
+}
+.caption p { margin: 0; }
+.caption .what { font-size: 17px; font-weight: 600; }
+.caption .why { margin-top: 4px; color: var(--caption-why); }
+.caption .why::before { content: "Why: "; font-weight: 600; }
+
+/* ===================== 6. The drawing ===================== */
 /* The row of drawing controls above the machine. */
 .toolbar {
   display: flex;
@@ -124,15 +267,17 @@ button.chip:hover { background: #dbeafe; }
   font-size: 14px;
 }
 .toolbar button { margin-top: 0; padding: 6px 12px; font-size: 14px; }
-.toolbar select { padding: 6px 8px; font-size: 14px; border-radius: 6px; border: 1px solid #ccc; }
+.toolbar select { padding: 6px 8px; font-size: 14px; }
 
-/* Cytoscape needs a box with a real height, or it draws nothing. */
+/* Cytoscape needs a box with a real height, or it draws nothing.
+   On short screens (phones) it shrinks so the buttons below stay in view. */
 #machine {
   position: relative;
-  height: 460px;
-  border: 1px solid #ccc;
+  height: min(460px, 60vh);
+  min-height: 260px;
+  border: 1px solid var(--border);
   border-radius: 8px;
-  background: #fcfcfd;
+  background: var(--canvas);
 }
 /* The grey message shown when there's nothing to draw. */
 .placeholder {
@@ -142,16 +287,21 @@ button.chip:hover { background: #dbeafe; }
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #9ca3af;
+  text-align: center;
+  padding: 0 16px;
+  color: var(--muted);
 }
-.legend { color: #6b7280; font-size: 14px; margin-top: 8px; }
 
-/* Buttons that can't be used right now. */
-button:disabled { opacity: 0.4; cursor: default; }
-button:disabled:hover { background: #1e40af; }   /* no hover change when disabled */
-button.secondary:disabled:hover { background: white; }
+/* Little color swatches in the legend, matching the drawing. */
+.key { padding: 0 4px; border-radius: 3px; }
+.key-current { background: var(--current-fill); color: var(--current-text); }
+.key-taken   { color: var(--taken-text); font-weight: 600; }
+.key-dead    { color: var(--dead); border: 1px dashed var(--dead); }
+.key-winner  { background: var(--winner-fill); color: var(--winner-text); }
+.key-loser   { background: var(--loser-fill); color: var(--loser-text); }
 
-/* The "tape": the test string, one box per character. */
+/* ===================== 7. The tape and playback ===================== */
+/* The test string, one box per character. */
 .tape {
   display: flex;
   flex-wrap: wrap;
@@ -165,14 +315,18 @@ button.secondary:disabled:hover { background: white; }
   min-width: 28px;
   padding: 4px 6px;
   text-align: center;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border);
   border-radius: 4px;
-  background: white;
+  background: var(--cell-bg);
 }
-.tape .cell.done    { color: #9ca3af; background: #f3f4f6; }     /* already read */
-.tape .cell.current { background: #fde68a; border-color: #d97706; font-weight: 700; }  /* just read */
-.tape .cell.never   { color: #9ca3af; border-style: dotted; text-decoration: line-through; } /* never read */
-.tape .note { color: #6b7280; font-size: 14px; align-self: center; }
+.tape .cell.done    { color: var(--cell-done-text); background: var(--cell-done-bg); }   /* already read */
+.tape .cell.current { background: var(--current-fill); border-color: var(--current-border);
+                      color: var(--current-text); font-weight: 700; }                    /* just read */
+.tape .cell.never   { color: var(--cell-done-text); border-style: dotted;
+                      text-decoration: line-through; }                                  /* never read */
+.tape .cell.foreign { border: 2px solid var(--dead); color: var(--err-text); }           /* not in alphabet */
+.tape .cell.current.foreign { color: var(--current-text); }
+.tape .note { color: var(--muted); font-size: 14px; align-self: center; }
 
 /* The row of playback buttons under the drawing. */
 .player {
@@ -183,62 +337,54 @@ button.secondary:disabled:hover { background: white; }
   margin: 12px 0;
 }
 .player button { margin-top: 0; }
-.step-label { color: #374151; font-size: 15px; margin-left: 6px; }
+.step-label { font-size: 15px; margin-left: 6px; }
 
-/* Little color swatches in the legend, matching the drawing. */
-.key { padding: 0 4px; border-radius: 3px; }
-.key-current { background: #fde68a; }
-.key-taken   { color: #c2410c; font-weight: 600; }
-.key-dead    { color: #dc2626; border: 1px dashed #dc2626; }
-.key-winner  { background: #bbf7d0; }
-.key-loser   { background: #fecaca; }
-
-/* The step table row that matches what the drawing shows right now. */
-.step-table tr.current-row td { background: #fef3c7; }
-.step-table tr.clickable { cursor: pointer; }
-.step-table tr.clickable:hover td { background: #f9fafb; }
-.step-table tr.current-row:hover td { background: #fef3c7; }
-
-/* The fold-open "Step details" section. */
+/* ===================== 8. Step details table ===================== */
 details summary { cursor: pointer; margin-top: 28px; }
 details summary h2 { display: inline; margin: 0; }
 
-/* The grey "not yet" verdict box shown while stepping. */
-.status.pending { color: #6b7280; }
+/* The table can scroll sideways on narrow screens instead of squashing. */
+#steps { overflow-x: auto; }
 
-/* The caption under the playback buttons. */
-.caption {
-  border-left: 4px solid #d97706;
-  background: #fffbeb;
-  padding: 10px 14px;
-  border-radius: 0 8px 8px 0;
-  margin-bottom: 12px;
+.step-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 14px;
 }
-.caption p { margin: 0; }
-.caption .what { font-size: 17px; font-weight: 600; }
-.caption .why { margin-top: 4px; color: #4b5563; }
-.caption .why::before { content: "Why: "; font-weight: 600; }
+.step-table th, .step-table td {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.step-table th { background: var(--th-bg); }
+.step-table td.mono { font-family: Consolas, "Courier New", monospace; }
+.step-table .bad { color: var(--dead); font-weight: 600; }
+.step-table tr.clickable { cursor: pointer; }
+.step-table tr.clickable:hover td { background: var(--row-hover); }
+.step-table tr.current-row td,
+.step-table tr.current-row:hover td { background: var(--row-current); }
+.step-note { color: var(--muted); font-size: 14px; margin-top: 8px; }
 
-/* Characters outside the alphabet, outlined on the tape from the start. */
-.tape .cell.foreign { border: 2px solid #dc2626; color: #b91c1c; }
-
-/* The "heads up" warning under the tape. */
-.heads-up {
-  margin: 8px 0 0;
-  padding: 8px 12px;
-  border-radius: 6px;
-  background: #fef2f2;
-  color: #991b1b;
-  font-size: 15px;
+/* ===================== 9. Phones and touch screens ===================== */
+/* Narrow screens: less padding, full-width inputs, buttons share the row. */
+@media (max-width: 600px) {
+  body { padding: 12px 12px 40px; }
+  .page-header h1 { font-size: 1.5rem; }
+  #source { height: 220px; }
+  #test-string { min-width: 0; flex: 1 1 100%; }
+  .actions > button { flex: 1 1 auto; }
+  /* The four playback buttons split the row evenly; the step label goes below. */
+  .player button { flex: 1 1 0; padding-left: 4px; padding-right: 4px; }
+  .step-label { flex-basis: 100%; margin-left: 0; text-align: center; }
+  .toolbar select { flex: 1 1 auto; }
 }
 
-/* The verdict: a bold headline, then the reason underneath. */
-.status .verdict-title { display: block; font-weight: 700; font-size: 17px; }
-.status .verdict-detail { display: block; margin-top: 4px; }
-#verdict { font-family: system-ui, sans-serif; white-space: normal; }
-
-/* The "Try an example" row. */
-.preset-row { margin-bottom: 4px; }
-.preset-row select { padding: 6px 8px; font-size: 15px; border-radius: 6px; border: 1px solid #ccc; }
-#preset-summary { margin: 4px 0 10px; }
-#preset-summary:empty { display: none; }
+/* Fingers are bigger than mouse pointers: make everything tappable. */
+@media (pointer: coarse) {
+  button, select { min-height: 44px; }
+  button.chip { min-height: 40px; }
+  /* Phones zoom in on text boxes with text smaller than 16px. Prevent that. */
+  textarea, input[type="text"], select, #source { font-size: 16px; }
+}

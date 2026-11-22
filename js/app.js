@@ -3,6 +3,7 @@
 const App = (function () {
 
   // Grab the pieces of the page we need to talk to.
+  const themeButton   = document.getElementById("theme-toggle");
   const presetSelect  = document.getElementById("preset");
   const presetSummary = document.getElementById("preset-summary");
   const sourceBox     = document.getElementById("source");
@@ -260,6 +261,17 @@ const App = (function () {
     fileNameLabel.textContent = "";
     forgetPreset();
   });
+
+  // Light / dark mode. The button shows the current choice; clicking cycles it.
+  // Whenever the colors change, the drawing re-reads them from style.css.
+  const THEME_LABELS = { auto: "◐ Theme: Auto", light: "☀ Theme: Light", dark: "☾ Theme: Dark" };
+  function showThemeChoice() {
+    themeButton.textContent = THEME_LABELS[Theme.choice()];
+    themeButton.title = "Auto follows your device's own light/dark setting. Click to switch.";
+  }
+  themeButton.addEventListener("click", () => { Theme.next(); showThemeChoice(); });
+  Theme.onChange(() => Display.refreshColors());
+  showThemeChoice();
 
   // When the page opens: fill the example list and show the first example,
   // so visitors see a working machine right away.

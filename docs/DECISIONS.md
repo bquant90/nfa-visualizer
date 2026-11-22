@@ -201,3 +201,7 @@ Newest decisions go at the bottom.
 ## 41. Unknown characters get a heads-up as soon as a string is run
 
 **Why:** Meets the requirement to say so clearly. It points at the problem ("watch what happens") without revealing the ending.
+
+## 42. Examples live in presets.js and load like pasted text
+
+**Why:** One path into the parser. The first example loads on page open so visitors never see an empty page. Examples (for learners) are kept separate from test files (for testing).

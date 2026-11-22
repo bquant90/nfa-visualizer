@@ -5,9 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NFA Visualizer</title>
   <link rel="stylesheet" href="css/style.css">
+  <!-- Loaded early (not at the bottom) so dark mode applies before anything is drawn. -->
+  <script src="js/theme.js"></script>
 </head>
 <body>
-  <h1>NFA Visualizer</h1>
+  <header class="page-header">
+    <h1>NFA Visualizer</h1>
+    <!-- Cycles Auto → Light → Dark. app.js sets its label. -->
+    <button id="theme-toggle" type="button" class="secondary theme-toggle"></button>
+  </header>
   <p class="intro">
     Pick an example below (or write your own), then type a string and step through it
     to watch the machine decide whether to accept it.

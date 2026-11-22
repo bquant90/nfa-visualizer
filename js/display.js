@@ -1,7 +1,7 @@
 // display.js: draws the machine with Cytoscape and lights up the current states.
 //
 // Three jobs:
-//   1. Draw the machine with Cytoscape (drawMachine, arrange, fitView, clearMachine).
+//   1. Draw the machine with Cytoscape (drawMachine, arrange, fitView, refreshColors, clearMachine).
 //   2. Show a run's result: the verdict box, the tape, and the table of recorded steps.
 //   3. Show ONE recorded step: light up states and arrows, the tape, the table row (showStep).
 // This is the ONLY file that talks to Cytoscape. It never decides WHICH step
@@ -23,19 +23,29 @@ const Display = (function () {
   const GHOST = "start arrow";
   const GHOST_EDGE = "start arrow edge";
 
+  // Read one color from style.css (e.g. color("--node-fill")). Keeping every
+  // color in style.css means light and dark mode are defined in one place.
+  function color(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
   // How everything looks. Written a lot like CSS: "selector" says which
   // elements a rule applies to, "style" says how they look.
-  const STYLE = [
+  // It's a function (not a fixed list) so it can re-read the colors when
+  // the theme changes.
+  function buildStyle() {
+    return [
     { selector: "node", style: {
         "label": "data(id)",
         "text-valign": "center",
         "font-family": "Consolas, monospace",
         "font-size": 16,
+        "color": color("--node-text"),
         "width": "data(size)",            // bigger circles for longer names
         "height": "data(size)",
-        "background-color": "#ffffff",
+        "background-color": color("--node-fill"),
         "border-width": 2,
-        "border-color": "#334155",
+        "border-color": color("--node-border"),
         // Fade colors in and out instead of snapping.
         "transition-property": "background-color, border-color",
         "transition-duration": 250,
@@ -58,11 +68,12 @@ const Display = (function () {
         "curve-style": "bezier",          // curves arrows apart when two states point at each other
         "target-arrow-shape": "triangle",
         "width": 2,
-        "line-color": "#64748b",
-        "target-arrow-color": "#64748b",
+        "line-color": color("--edge"),
+        "target-arrow-color": color("--edge"),
+        "color": color("--edge-text"),
         "font-family": "Consolas, monospace",
         "font-size": 15,
-        "text-background-color": "#fcfcfd",   // a small backing so labels stay readable over lines
+        "text-background-color": color("--canvas"),   // a small backing so labels stay readable over lines
         "text-background-opacity": 1,
         "text-background-padding": 2,
         "loop-direction": "0deg",         // loop arrows (state to itself) sit on top
@@ -76,34 +87,43 @@ const Display = (function () {
     // ----- Playback highlights (added and removed by showStep) -----
     // Where the machine could be right now.
     { selector: "node.current", style: {
-        "background-color": "#fde68a",
-        "border-color": "#b45309",
+        "background-color": color("--current-fill"),
+        "border-color": color("--current-border"),
+        "color": color("--current-text"),
     }},
     // A guess that just hit a dead end (no arrow for the character read).
     { selector: "node.dead", style: {
-        "border-color": "#dc2626",
+        "border-color": color("--dead"),
         "border-style": "dashed",
         "border-width": 3,
     }},
     // The ending (last step only): green = accepted here, red = not accepted.
     { selector: "node.winner", style: {
-        "background-color": "#bbf7d0",
-        "border-color": "#15803d",
+        "background-color": color("--winner-fill"),
+        "border-color": color("--winner-border"),
+        "color": color("--winner-text"),
     }},
     { selector: "node.loser", style: {
-        "background-color": "#fecaca",
-        "border-color": "#b91c1c",
+        "background-color": color("--loser-fill"),
+        "border-color": color("--loser-border"),
+        "color": color("--loser-text"),
     }},
     // Arrows used on this step.
     { selector: "edge.taken", style: {
-        "line-color": "#ea580c",
-        "target-arrow-color": "#ea580c",
+        "line-color": color("--taken"),
+        "target-arrow-color": color("--taken"),
         "width": 4,
-        "color": "#c2410c",
+        "color": color("--taken-text"),
         "font-weight": "bold",
         "z-index": 10,
     }},
-  ];
+    ];
+  }
+
+  // Re-read the colors from style.css (after switching light/dark mode).
+  function refreshColors() {
+    if (cy) cy.style(buildStyle());
+  }
 
   // Turn a parsed machine into Cytoscape "elements": one node per state,
   // one edge per (from, to) pair. If several characters lead from the same
@@ -162,7 +182,7 @@ const Display = (function () {
     cy = cytoscape({
       container,
       elements: buildElements(machine),
-      style: STYLE,
+      style: buildStyle(),
       minZoom: 0.1,
       maxZoom: 2.5,
       boxSelectionEnabled: false,   // no drag-to-select rectangle; dragging moves circles
@@ -206,8 +226,20 @@ const Display = (function () {
     const states = cy.nodes().not(cy.getElementById(GHOST))
       .sort((a, b) => a.id().localeCompare(b.id(), undefined, { numeric: true }));
     const arrows = cy.edges().not(cy.getElementById(GHOST_EDGE));
+    // On narrow screens (phones), lay out in an area sized by the NUMBER OF
+    // STATES instead of by the screen, or the circles get squeezed together.
+    // fitView() then zooms out so it all fits. Wide screens use the drawing
+    // box itself, as before.
+    const n = states.length;
+    const narrow = cy.width() < 600;
+    const area = {
+      x1: 0, y1: 0,
+      w: Math.max(cy.width(), 160 * Math.min(Math.max(n, 2), 6)),
+      h: Math.max(cy.height(), 260),
+    };
     const layout = states.union(arrows).layout({
       ...layoutOptions(layoutName),
+      ...(narrow ? { boundingBox: area } : {}),
       fit: false,
       animate,
       animationDuration: 500,
@@ -431,7 +463,7 @@ const Display = (function () {
   }
 
   return {
-    drawMachine, arrange, fitView, clearMachine, edgeId,
+    drawMachine, arrange, fitView, clearMachine, refreshColors, edgeId,
     showVerdict, showPending, showTape, showStepTable, showStep, showCaption, clearRun,
   };
 })();
