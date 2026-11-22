@@ -161,3 +161,26 @@ Newest decisions go at the bottom.
 ## 32. Table rows and the drawing stay in sync; clicking a row jumps to that step
 
 **Why:** Shows that the data and the picture are the same thing.
+
+## 33. No Play/Pause or speed control for now
+
+**Date:** Nov 22, 2026
+**Why:** Stepping by hand (Start / Back / Step) is enough to learn from.
+**If we want it later:** a timer in player.js that calls next() until atEnd(), plus one button. No engine or display changes needed.
+
+## 34. The verdict appears when the last step is first reached, then stays
+
+**Why:** Lets learners predict before seeing the answer, but doesn't hide it when they step back to review.
+
+## 35. The ending shows on the drawing: green = accepting state finished on, red = rejected
+
+**Why:** One green circle is enough to accept, which teaches the "any guess wins" rule visually.
+
+## 36. Step details folded shut by default
+
+**Why:** The table shows the ending, which would spoil the prediction.
+
+## 37. Captions: "what + why", capped in length
+
+**Why:** Max two sentences. Lists cut off after 4 names ("…and 9 more"). Busy steps get summarized. Full detail stays in the table.
+**Passed on:** Plain "what" only. It has the same length problem, and loses the "why."

@@ -384,12 +384,19 @@ const Display = (function () {
     // The table: mark the matching row.
     tableRows.forEach((row, i) => row.classList.toggle("current-row", i === index));
 
-    // The label next to the buttons. Phase 5 replaces this with a real caption.
+    // The short label next to the buttons. The caption (below) says the rest.
     const total = Array.from(result.text).length;
     labelBox.textContent = step.kind === "start"
       ? `Start (0 of ${total} characters read)`
-      : `Step ${step.position} of ${total}: read '${step.symbol}'` +
-        (stoppedEarly ? "  (stopped: nothing left)" : "");
+      : `Step ${step.position} of ${total}`;
+  }
+
+  // Show a caption from explain.js: { what, why }. Pass null to hide it.
+  function showCaption(box, caption) {
+    box.hidden = !caption;
+    if (!caption) return;
+    box.querySelector(".what").textContent = caption.what;
+    box.querySelector(".why").textContent = caption.why;
   }
 
   // Remove every trace of the last run (used when the machine changes).
@@ -415,6 +422,6 @@ const Display = (function () {
 
   return {
     drawMachine, arrange, fitView, clearMachine, edgeId,
-    showVerdict, showPending, showTape, showStepTable, showStep, clearRun,
+    showVerdict, showPending, showTape, showStepTable, showStep, showCaption, clearRun,
   };
 })();

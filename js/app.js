@@ -24,6 +24,7 @@ const App = (function () {
   const backButton    = document.getElementById("btn-back");
   const stepButton    = document.getElementById("btn-step");
   const endButton     = document.getElementById("btn-end");
+  const captionBox    = document.getElementById("caption");
 
   // The machine that is loaded right now (null until one loads cleanly).
   let current = null;
@@ -140,6 +141,7 @@ const App = (function () {
       count: result.steps.length,
       onShow: index => {
         Display.showStep(result, index, stepLabel);
+        Display.showCaption(captionBox, Explain.step(current.machine, result, index));
         if (player.atEnd()) revealed = true;
         if (revealed) Display.showVerdict(verdictBox, result);
         else Display.showPending(verdictBox);
@@ -161,6 +163,7 @@ const App = (function () {
   function forgetRun() {
     player = null;
     Display.clearRun(tapeBox, stepLabel);
+    Display.showCaption(captionBox, null);
     stepsBox.replaceChildren();
     verdictBox.hidden = true;
     updateButtons();

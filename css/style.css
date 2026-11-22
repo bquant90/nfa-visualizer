@@ -205,3 +205,16 @@ details summary h2 { display: inline; margin: 0; }
 
 /* The grey "not yet" verdict box shown while stepping. */
 .status.pending { color: #6b7280; }
+
+/* The caption under the playback buttons. */
+.caption {
+  border-left: 4px solid #d97706;
+  background: #fffbeb;
+  padding: 10px 14px;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 12px;
+}
+.caption p { margin: 0; }
+.caption .what { font-size: 17px; font-weight: 600; }
+.caption .why { margin-top: 4px; color: #4b5563; }
+.caption .why::before { content: "Why: "; font-weight: 600; }
