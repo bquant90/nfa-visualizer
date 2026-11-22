@@ -232,6 +232,6 @@ Newest decisions go at the bottom.
 
 **Why:** No server or database needed. The part after # never leaves the visitor's browser.
 
-## 50. README, link preview, favicon, and a review brief for outside reviewers
+## 50. README, link preview, and favicon.
 
-**Why:** The README explains the project to strangers. REVIEW-BRIEF.md gives any reviewer (human or AI) the context and rules up front.
+**Why:** The README explains the project to strangers.

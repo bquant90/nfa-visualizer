@@ -84,7 +84,7 @@ flowchart LR
 | `check.html` + `js/check.js` | Testing tool: prints results in the Python version's exact format                                   |
 | `lib/cytoscape.min.js`       | Cytoscape.js 3.35.0 (MIT license)                                                                   |
 
-Every big choice, and what was passed on, is in **[docs/DECISIONS.md](docs/DECISIONS.md)**. New terms are in **[docs/GLOSSARY.md](docs/GLOSSARY.md)**.
+Every big choice, and what was passed on, is in **[docs/DECISIONS.md](docs/DECISIONS.md)**.
 
 ## How we know it's right
 

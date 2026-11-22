@@ -1,3 +1,5 @@
-# Salesforce extension folders (not part of this project)
+# Gitignore files/folders
 .sf/
 .sfdx/
+docs/GLOSSARY.md
+docs/REVIEW-BRIEF.md
