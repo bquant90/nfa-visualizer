@@ -190,9 +190,18 @@ button.secondary:disabled:hover { background: white; }
 .key-current { background: #fde68a; }
 .key-taken   { color: #c2410c; font-weight: 600; }
 .key-dead    { color: #dc2626; border: 1px dashed #dc2626; }
+.key-winner  { background: #bbf7d0; }
+.key-loser   { background: #fecaca; }
 
 /* The step table row that matches what the drawing shows right now. */
 .step-table tr.current-row td { background: #fef3c7; }
 .step-table tr.clickable { cursor: pointer; }
 .step-table tr.clickable:hover td { background: #f9fafb; }
 .step-table tr.current-row:hover td { background: #fef3c7; }
+
+/* The fold-open "Step details" section. */
+details summary { cursor: pointer; margin-top: 28px; }
+details summary h2 { display: inline; margin: 0; }
+
+/* The grey "not yet" verdict box shown while stepping. */
+.status.pending { color: #6b7280; }

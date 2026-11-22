@@ -80,6 +80,7 @@ New terms, one plain-English line each. Grouped by topic.
 
 - **Possible states:** The set of every state the machine could be in right now. All of them move together on each character.
 - **Dead end:** A possible state with no arrow for the character being read. It drops out of the set.
+- **Tape:** The input string shown as a row of boxes, one character each, so you can see what's been read.
 
 ## Testing
 
@@ -92,7 +93,6 @@ New terms, one plain-English line each. Grouped by topic.
 - **Separation of concerns:** Each file has one job, so you always know where to look.
 - **Conductor:** Our nickname for app.js. It doesn't do the work itself; it calls each file in the right order.
 - **Silent failure:** When code is wrong but shows no error, only a wrong result. Check the output itself, not just the Console.
-
-## Architecture
-
 - **Stale data:** Information that's out of date, like a loaded machine that no longer matches the edited text.
+- **Reusable component:** A piece that knows nothing about the project it's in (like player.js), so another project can use it unchanged.
+- **Callback:** A function you hand to another piece of code to run later, like onShow given to the player.

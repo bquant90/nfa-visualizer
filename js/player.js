@@ -1,14 +1,15 @@
 // player.js: steps back and forth through a list of recorded steps.
 //
 // This file knows NOTHING about NFAs, states or Cytoscape. It only knows
-// "there are N steps, and we're showing step number i". That makes it reusable.
+// "there are N steps, and we're showing step number i". That makes it
+// reusable: the grammar parser can use the exact same player later.
 //
 // How to use it:
 //   const player = Player.create({
 //     count: 5,                        // how many steps there are
 //     onShow: (index) => { ... },      // draws step number "index"
 //   });
-//   player.next();  player.back();  player.goTo(3);  player.reset();
+//   player.next();  player.back();  player.goTo(3);  player.reset();  player.end();
 
 const Player = (function () {
 
@@ -26,6 +27,7 @@ const Player = (function () {
       next:    () => goTo(index + 1),
       back:    () => goTo(index - 1),
       reset:   () => goTo(0),
+      end:     () => goTo(count - 1),
       index:   () => index,
       atStart: () => index === 0,
       atEnd:   () => index === count - 1,

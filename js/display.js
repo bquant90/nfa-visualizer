@@ -85,6 +85,15 @@ const Display = (function () {
         "border-style": "dashed",
         "border-width": 3,
     }},
+    // The ending (last step only): green = accepted here, red = not accepted.
+    { selector: "node.winner", style: {
+        "background-color": "#bbf7d0",
+        "border-color": "#15803d",
+    }},
+    { selector: "node.loser", style: {
+        "background-color": "#fecaca",
+        "border-color": "#b91c1c",
+    }},
     // Arrows used on this step.
     { selector: "edge.taken", style: {
         "line-color": "#ea580c",
@@ -266,6 +275,13 @@ const Display = (function () {
     box.textContent = `${label} is ${answer}   (reason code: ${result.reason})`;
   }
 
+  // While stepping, the verdict box just says the answer is coming.
+  function showPending(box) {
+    box.hidden = false;
+    box.className = "status pending";
+    box.textContent = "Step to the end (or click End ⏭) to see whether this string is accepted.";
+  }
+
   // Build the tape: the test string, one box per character.
   function showTape(container, result) {
     container.replaceChildren();
@@ -337,13 +353,21 @@ const Display = (function () {
 
     // The drawing: clear old highlights, then add this step's.
     if (cy) {
-      cy.elements().removeClass("current taken dead");
+      cy.elements().removeClass("current taken dead winner loser");
       for (const state of step.after) cy.getElementById(state).addClass("current");
       if (step.kind === "start") cy.getElementById(GHOST_EDGE).addClass("taken");
       for (const move of step.moves) cy.getElementById(edgeId(move.from, move.to)).addClass("taken");
       // A dead end only gets marked if no other guess landed on that state.
       for (const state of step.deadEnds) {
         if (!step.after.includes(state)) cy.getElementById(state).addClass("dead");
+      }
+      // On the last step, color the ending: accepting states we finished on go
+      // green; if the string was rejected, the states we finished on go red.
+      if (isLast) {
+        for (const state of result.winners) cy.getElementById(state).addClass("winner");
+        if (!result.accepted) {
+          for (const state of step.after) cy.getElementById(state).addClass("loser");
+        }
       }
     }
 
@@ -370,7 +394,7 @@ const Display = (function () {
 
   // Remove every trace of the last run (used when the machine changes).
   function clearRun(tapeBox, labelBox) {
-    if (cy) cy.elements().removeClass("current taken dead");
+    if (cy) cy.elements().removeClass("current taken dead winner loser");
     tapeBox.replaceChildren();
     tapeCells = [];
     tableRows = [];
@@ -391,6 +415,6 @@ const Display = (function () {
 
   return {
     drawMachine, arrange, fitView, clearMachine, edgeId,
-    showVerdict, showTape, showStepTable, showStep, clearRun,
+    showVerdict, showPending, showTape, showStepTable, showStep, clearRun,
   };
 })();

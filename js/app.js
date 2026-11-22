@@ -23,6 +23,7 @@ const App = (function () {
   const startButton   = document.getElementById("btn-start");
   const backButton    = document.getElementById("btn-back");
   const stepButton    = document.getElementById("btn-step");
+  const endButton     = document.getElementById("btn-end");
 
   // The machine that is loaded right now (null until one loads cleanly).
   let current = null;
@@ -125,17 +126,23 @@ const App = (function () {
     const text = Parser.strip(rawText);
     testInput.value = text;
 
-    // 1. The engine records every step.  2. Display builds the tape and table.
+    // 1. The engine records every step.  
+    // 2. Display builds the tape and table.
     // 3. A player starts at step 0; the buttons move it back and forth.
     const result = Engine.run(current.machine, text);
-    Display.showVerdict(verdictBox, result);
     Display.showTape(tapeBox, result);
     Display.showStepTable(stepsBox, result, index => player.goTo(index));
 
+    // The verdict stays hidden until the last step has been shown once,
+    // so learners can predict the answer before they see it.
+    let revealed = false;
     player = Player.create({
       count: result.steps.length,
       onShow: index => {
         Display.showStep(result, index, stepLabel);
+        if (player.atEnd()) revealed = true;
+        if (revealed) Display.showVerdict(verdictBox, result);
+        else Display.showPending(verdictBox);
         updateButtons();
       },
     });
@@ -147,6 +154,7 @@ const App = (function () {
     startButton.disabled = !player || player.atStart();
     backButton.disabled  = !player || player.atStart();
     stepButton.disabled  = !player || player.atEnd();
+    endButton.disabled   = !player || player.atEnd();
   }
 
   // Throw away the last run: highlights, tape, table, verdict, buttons.
@@ -198,6 +206,7 @@ const App = (function () {
   startButton.addEventListener("click", () => player && player.reset());
   backButton.addEventListener("click",  () => player && player.back());
   stepButton.addEventListener("click",  () => player && player.next());
+  endButton.addEventListener("click",   () => player && player.end());
 
   // Once the user edits the text, it no longer matches the file they opened.
   sourceBox.addEventListener("input", () => { fileNameLabel.textContent = ""; });

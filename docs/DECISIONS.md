@@ -144,3 +144,20 @@ Newest decisions go at the bottom.
 ## 28. States are placed in "people order" (r2 before r10)
 
 **Why:** Easier to read. We sort before handing states to Cytoscape, because its circle layout ignores its own sort setting in v3.35.0.
+
+## 29. A separate player.js that knows nothing about NFAs
+
+**Why:** Every button just changes "which step number is showing." Going back is free because steps are pre-recorded. Reusable for the grammar parser.
+**Passed on:** Putting the step counter in display.js or app.js. Tangled with NFA code, not reusable.
+
+## 30. Highlight colors: yellow = possible states, orange = arrows used, red dashed = dead end
+
+**Why:** Distinct and readable. A dead end is only marked if no other guess landed on that state.
+
+## 31. Page order: describe, found, pick a string, watch it run, step details
+
+**Why:** Playback controls sit right under the drawing, so you can watch and click without scrolling.
+
+## 32. Table rows and the drawing stay in sync; clicking a row jumps to that step
+
+**Why:** Shows that the data and the picture are the same thing.
