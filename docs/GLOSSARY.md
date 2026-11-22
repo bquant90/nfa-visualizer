@@ -97,3 +97,10 @@ New terms, one plain-English line each. Grouped by topic.
 - **Reusable component:** A piece that knows nothing about the project it's in (like player.js), so another project can use it unchanged.
 - **Callback:** A function you hand to another piece of code to run later, like onShow given to the player.
 - **Layer independence:** Two layers that never call each other directly. The conductor (app.js) passes information between them.
+
+## Web pages
+
+- **CSS variable:** A named value like --text, defined once and reused everywhere. Change it once, it changes everywhere.
+- **Media query:** A CSS rule that only applies in certain conditions, like "screen narrower than 600px" or "touch screen."
+- **localStorage:** A small notepad the browser keeps for each website. We use it to remember the theme.
+- **Tap target:** The area you can tap on a touch screen. Too small and fingers miss.

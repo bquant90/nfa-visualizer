@@ -297,17 +297,46 @@ const Display = (function () {
   let tapeCells = [];   // one box per character of the string
   let tableRows = [];   // one table row per recorded step
 
+  // ---------- Browser-translation friendly text ----------
+
+  // Put a sentence on the page, but wrap state names and quoted characters
+  // ('0', "101") in translate="no" pieces. Browser translation (Chrome,
+  // Edge, Safari) then translates the sentence but leaves q0 and '0' alone,
+  // so the words always match the drawing.
+  //   names: the machine's state names (optional)
+  function setText(element, text, names = []) {
+    element.replaceChildren();
+    const escaped = [...new Set(names)]
+      .filter(name => name)
+      .sort((a, b) => b.length - a.length)               // longest first: "q10" before "q1"
+      .map(name => name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+    const pieces = ["'[^'\\s]+'", '"[^"]*"'];          // 'x', 'q9' and "a string"
+    if (escaped.length) pieces.push(`(?<![\\p{L}\\p{N}_-])(?:${escaped.join("|")})(?![\\p{L}\\p{N}_-])`);
+    const pattern = new RegExp(pieces.join("|"), "gu");
+
+    let last = 0;
+    for (const match of text.matchAll(pattern)) {
+      if (match.index > last) element.append(text.slice(last, match.index));
+      const span = document.createElement("span");
+      span.translate = false;
+      span.textContent = match[0];
+      element.append(span);
+      last = match.index + match[0].length;
+    }
+    element.append(text.slice(last));
+  }
+
   // Show the final answer in a green or red box.
   // words = { title, detail } from Explain.verdict().
-  function showVerdict(box, accepted, words) {
+  function showVerdict(box, accepted, words, names) {
     box.hidden = false;
     box.className = "status " + (accepted ? "ok" : "error");
     const title = document.createElement("span");
     title.className = "verdict-title";
-    title.textContent = words.title;
+    setText(title, words.title, names);
     const detail = document.createElement("span");
     detail.className = "verdict-detail";
-    detail.textContent = words.detail;
+    setText(detail, words.detail, names);
     box.replaceChildren(title, detail);
   }
 
@@ -325,7 +354,7 @@ const Display = (function () {
     container.replaceChildren();
     tapeCells = [];
     noteBox.hidden = !headsUp;
-    noteBox.textContent = headsUp || "";
+    setText(noteBox, headsUp || "");
     const characters = Array.from(result.text);
     if (characters.length === 0) {
       const note = document.createElement("span");
@@ -363,8 +392,11 @@ const Display = (function () {
         step.moves.length ? step.moves.map(m => `${m.from} → ${m.to}`).join(", ") : "—",
         step.deadEnds.length ? step.deadEnds.join(", ") : "—",
       ]);
-      // Code-like cells get a typewriter font.
-      for (const i of [1, 2, 3, 4, 5]) row.cells[i].classList.add("mono");
+      // Code-like cells get a typewriter font, and browser translation skips them.
+      for (const i of [1, 2, 3, 4, 5]) {
+        row.cells[i].classList.add("mono");
+        row.cells[i].translate = false;
+      }
       // Flag characters that aren't in the alphabet.
       if (!step.inAlphabet) {
         row.cells[1].classList.add("bad");
@@ -433,11 +465,12 @@ const Display = (function () {
   }
 
   // Show a caption from explain.js: { what, why }. Pass null to hide it.
-  function showCaption(box, caption) {
+  // names = the machine's state names, protected from browser translation.
+  function showCaption(box, caption, names) {
     box.hidden = !caption;
     if (!caption) return;
-    box.querySelector(".what").textContent = caption.what;
-    box.querySelector(".why").textContent = caption.why;
+    setText(box.querySelector(".what"), caption.what, names);
+    setText(box.querySelector(".why-text"), caption.why, names);
   }
 
   // Remove every trace of the last run (used when the machine changes).
@@ -464,6 +497,6 @@ const Display = (function () {
 
   return {
     drawMachine, arrange, fitView, clearMachine, refreshColors, edgeId,
-    showVerdict, showPending, showTape, showStepTable, showStep, showCaption, clearRun,
+    showVerdict, showPending, showTape, showStepTable, showStep, showCaption, clearRun, setText,
   };
 })();

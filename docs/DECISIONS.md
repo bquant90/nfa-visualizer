@@ -205,3 +205,16 @@ Newest decisions go at the bottom.
 ## 42. Examples live in presets.js and load like pasted text
 
 **Why:** One path into the parser. The first example loads on page open so visitors never see an empty page. Examples (for learners) are kept separate from test files (for testing).
+
+## 43. All colors are named variables in style.css; dark mode redefines them
+
+**Why:** One place for every color. The drawing reads the same variables, so it follows the theme too.
+**Passed on:** A separate dark.css repeating every rule (twice the CSS, drifts apart).
+
+## 44. Theme choices: Auto (follow the device), Light, Dark; remembered per browser
+
+**Why:** Respects the device setting by default. theme.js loads first to avoid a white flash.
+
+## 45. Phone layout: bigger tap targets, 16px text boxes, roomier layout on narrow screens
+
+**Why:** 44px is a comfortable thumb size. Under 16px, iPhones zoom in on text boxes. Narrow screens squeezed the circles together.

@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NFA Visualizer</title>
+  <!-- Shown in search results and in link previews (texts, Slack, social media) -->
+  <meta name="description" content="Watch a nondeterministic finite automaton (NFA) read a string step by step, with plain-English explanations. Free, runs in your browser.">
+  <meta property="og:title" content="NFA Visualizer">
+  <meta property="og:description" content="Watch an NFA read a string step by step, with plain-English explanations.">
+  <meta property="og:image" content="https://bquant90.github.io/nfa-visualizer/docs/screenshot.png">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/style.css">
   <!-- Loaded early (not at the bottom) so dark mode applies before anything is drawn. -->
   <script src="js/theme.js"></script>
@@ -29,13 +36,15 @@
     </div>
     <p id="preset-summary" class="legend"></p>
     <!-- Filled with the first example when the page opens -->
-    <textarea id="source" spellcheck="false"></textarea>
+    <!-- translate="no": browser translation must never change the machine itself -->
+    <textarea id="source" spellcheck="false" translate="no" aria-label="Machine description"></textarea>
     <div class="actions">
       <button id="load" type="button">Load machine</button>
       <button id="choose-file" type="button" class="secondary">Open a .txt file…</button>
       <!-- The browser's built-in file picker. Hidden; the button above opens it. -->
       <input id="file-input" type="file" accept=".txt,text/plain" hidden>
-      <span id="file-name" class="file-name"></span>
+      <button id="share" type="button" class="secondary">Copy link to this machine</button>
+      <span id="file-name" class="file-name" role="status"></span>
     </div>
   </section>
 
@@ -49,7 +58,7 @@
   <section>
     <h2>3. Pick a string to test</h2>
     <div class="actions">
-      <input id="test-string" type="text" placeholder="Type a string, e.g. 1101" spellcheck="false" autocomplete="off">
+      <input id="test-string" type="text" placeholder="Type a string, e.g. 1101" spellcheck="false" autocomplete="off" translate="no" aria-label="String to test">
       <button id="run" type="button">Run</button>
     </div>
     <!-- Buttons for the test strings found in the machine description -->
@@ -70,30 +79,32 @@
       <button id="fit" type="button" class="secondary">Fit to screen</button>
     </div>
     <!-- Cytoscape draws inside this box -->
-    <div id="machine"><p class="placeholder">Load a machine to see its drawing.</p></div>
+    <div id="machine" role="img" aria-label="Drawing of the machine. The caption under the buttons describes each step in words."><p class="placeholder">Load a machine to see its drawing.</p></div>
 
     <!-- The string being read, one box per character -->
-    <div id="tape" class="tape"></div>
+    <div id="tape" class="tape" translate="no" aria-hidden="true"></div>
     <!-- A warning when the string uses characters the machine doesn't know -->
     <p id="heads-up" class="heads-up" hidden></p>
 
     <!-- Playback controls. They stay disabled until a string has been run. -->
     <div class="player">
       <button id="btn-start" type="button" class="secondary" disabled>⏮ Start</button>
-      <button id="btn-back" type="button" class="secondary" disabled>◀ Back</button>
-      <button id="btn-step" type="button" disabled>Step ▶</button>
+      <button id="btn-back" type="button" class="secondary" disabled title="Back (← key)">◀ Back</button>
+      <button id="btn-step" type="button" disabled title="Step (→ key)">Step ▶</button>
       <button id="btn-end" type="button" class="secondary" disabled>End ⏭</button>
       <span id="step-label" class="step-label"></span>
     </div>
 
     <!-- The plain-English caption for the step on screen: what happened, and why -->
-    <div id="caption" class="caption" hidden>
-      <p id="caption-what" class="what"></p>
-      <p id="caption-why" class="why"></p>
+    <!-- aria-live: screen readers read each new caption aloud as you step -->
+    <div id="caption" class="caption" hidden aria-live="polite">
+      <p class="what"></p>
+      <p class="why"><strong>Why:</strong> <span class="why-text"></span></p>
     </div>
 
-    <div id="verdict" class="status" hidden></div>
+    <div id="verdict" class="status" hidden aria-live="polite"></div>
     <p class="legend">
+      Tip: the ← and → keys step back and forth.
       Circles are states. Arrows are rules, labeled with the characters they read.
       The arrow coming from nowhere points at the start state.
       A double circle is an accepting (winning) state.

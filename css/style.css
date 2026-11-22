@@ -254,7 +254,6 @@ button.chip:hover { background: var(--chip-hover); }
 .caption p { margin: 0; }
 .caption .what { font-size: 17px; font-weight: 600; }
 .caption .why { margin-top: 4px; color: var(--caption-why); }
-.caption .why::before { content: "Why: "; font-weight: 600; }
 
 /* ===================== 6. The drawing ===================== */
 /* The row of drawing controls above the machine. */

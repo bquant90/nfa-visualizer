@@ -7,6 +7,7 @@ const App = (function () {
   const presetSelect  = document.getElementById("preset");
   const presetSummary = document.getElementById("preset-summary");
   const sourceBox     = document.getElementById("source");
+  const shareButton   = document.getElementById("share");
   const loadButton    = document.getElementById("load");
   const chooseButton  = document.getElementById("choose-file");
   const fileInput     = document.getElementById("file-input");
@@ -107,6 +108,50 @@ const App = (function () {
     loadMachine();
   }
 
+  // ---------- Sharing a machine by link ----------
+  //
+  // The machine's text is packed into the part of the address after "#".
+  // That part never leaves the visitor's browser (it isn't sent to GitHub),
+  // so no server or database is needed.
+  //   .../nfa-visualizer/#m=<machine text>&s=<test string>
+
+  function shareLink() {
+    const params = new URLSearchParams({ m: sourceBox.value });
+    const text = Parser.strip(testInput.value);
+    if (text) params.set("s", text);
+    return location.href.split("#")[0] + "#" + params.toString();
+  }
+
+  async function copyShareLink() {
+    const link = shareLink();
+    try {
+      await navigator.clipboard.writeText(link);
+      fileNameLabel.textContent = "Link copied! Anyone who opens it sees this machine.";
+    } catch {
+      // Copying can be blocked. Put the link in the address bar instead.
+      history.replaceState(null, "", link);
+      fileNameLabel.textContent = "Copy the link from your browser's address bar.";
+    }
+  }
+
+  // If the page was opened from a shared link, load that machine (and string).
+  // Returns true if it did.
+  function openSharedLink() {
+    const params = new URLSearchParams(location.hash.slice(1));
+    const text = params.get("m");
+    if (text === null) return false;
+    sourceBox.value = text;
+    forgetPreset();
+    fileNameLabel.textContent = "Opened from a shared link.";
+    loadMachine();
+    const s = params.get("s");
+    if (s !== null && current) {
+      testInput.value = s;
+      runString(s);
+    }
+    return true;
+  }
+
   // ---------- Examples ----------
 
   // Fill the "Try an example" list from presets.js.
@@ -146,7 +191,16 @@ const App = (function () {
   // textContent (not innerHTML) shows text exactly as typed, never as page code.
   function show(kind, text) {
     statusBox.className = "status " + kind;
-    statusBox.textContent = text;
+    if (kind === "error") {
+      // Error messages are sentences: let browser translation work on them,
+      // but keep the quoted names ('q9', 'foo') exactly as typed.
+      statusBox.translate = true;
+      Display.setText(statusBox, text);
+    } else {
+      // The summary is code-like (Alphabet: {0, 1}...), so it's never translated.
+      statusBox.translate = false;
+      statusBox.textContent = text;
+    }
   }
 
   // ---------- 2. Testing a string ----------
@@ -180,16 +234,22 @@ const App = (function () {
       count: result.steps.length,
       onShow: index => {
         Display.showStep(result, index, stepLabel);
-        Display.showCaption(captionBox, Explain.step(current.machine, result, index));
+        Display.showCaption(captionBox, Explain.step(current.machine, result, index), stateNames());
         if (player.atEnd()) revealed = true;
         if (revealed) {
-          Display.showVerdict(verdictBox, result.accepted, Explain.verdict(current.machine, result));
+          Display.showVerdict(verdictBox, result.accepted,
+                              Explain.verdict(current.machine, result), stateNames());
         }
         else Display.showPending(verdictBox);
         updateButtons();
       },
     });
     player.reset();
+  }
+
+  // The current machine's state names (kept safe from browser translation).
+  function stateNames() {
+    return current ? [...current.machine.states] : [];
   }
 
   // Grey out buttons that can't do anything right now.
@@ -224,6 +284,7 @@ const App = (function () {
       const chip = document.createElement("button");
       chip.type = "button";
       chip.className = "chip";
+      chip.translate = false;   // test strings must never be translated
       chip.textContent = text === "" ? "(empty string)" : text;
       chip.addEventListener("click", () => runString(text));
       chipsBox.appendChild(chip);
@@ -262,6 +323,16 @@ const App = (function () {
     forgetPreset();
   });
 
+  // Keyboard: ← and → step back and forth, unless the user is typing in a box.
+  document.addEventListener("keydown", event => {
+    if (!player || event.altKey || event.ctrlKey || event.metaKey) return;
+    if (event.target.closest("input, textarea, select")) return;
+    if (event.key === "ArrowLeft")  { event.preventDefault(); player.back(); }
+    if (event.key === "ArrowRight") { event.preventDefault(); player.next(); }
+  });
+
+  shareButton.addEventListener("click", copyShareLink);
+
   // Light / dark mode. The button shows the current choice; clicking cycles it.
   // Whenever the colors change, the drawing re-reads them from style.css.
   const THEME_LABELS = { auto: "◐ Theme: Auto", light: "☀ Theme: Light", dark: "☾ Theme: Dark" };
@@ -273,10 +344,11 @@ const App = (function () {
   Theme.onChange(() => Display.refreshColors());
   showThemeChoice();
 
-  // When the page opens: fill the example list and show the first example,
-  // so visitors see a working machine right away.
+  // When the page opens: fill the example list. If the link carries a shared
+  // machine, load that; otherwise show the first example, so visitors see a
+  // working machine right away.
   fillPresetList();
-  usePreset(Presets.list[0].id);
+  if (!openSharedLink()) usePreset(Presets.list[0].id);
 
   // Nothing else needs to reach inside App yet.
   return {};
