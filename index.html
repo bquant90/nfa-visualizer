@@ -84,14 +84,14 @@
     <!-- The string being read, one box per character -->
     <div id="tape" class="tape" translate="no" aria-hidden="true"></div>
     <!-- A warning when the string uses characters the machine doesn't know -->
-    <p id="heads-up" class="heads-up" hidden></p>
+    <p id="heads-up" class="heads-up" hidden aria-live="polite"></p>
 
     <!-- Playback controls. They stay disabled until a string has been run. -->
     <div class="player">
-      <button id="btn-start" type="button" class="secondary" disabled>⏮ Start</button>
-      <button id="btn-back" type="button" class="secondary" disabled title="Back (← key)">◀ Back</button>
-      <button id="btn-step" type="button" disabled title="Step (→ key)">Step ▶</button>
-      <button id="btn-end" type="button" class="secondary" disabled>End ⏭</button>
+      <button id="btn-start" type="button" class="secondary" disabled><span aria-hidden="true">⏮</span> Start</button>
+      <button id="btn-back" type="button" class="secondary" disabled title="Back (← key)"><span aria-hidden="true">◀</span> Back</button>
+      <button id="btn-step" type="button" disabled title="Step (→ key)">Step <span aria-hidden="true">▶</span></button>
+      <button id="btn-end" type="button" class="secondary" disabled>End <span aria-hidden="true">⏭</span></button>
       <span id="step-label" class="step-label"></span>
     </div>
 
@@ -108,6 +108,7 @@
       Circles are states. Arrows are rules, labeled with the characters they read.
       The arrow coming from nowhere points at the start state.
       A double circle is an accepting (winning) state.
+      When a state has more than one arrow for the same character, the machine splits and follows every path at once—each path is a guess.
       While a string runs, <span class="key key-current">yellow</span> circles are where the
       machine could be right now, <span class="key key-taken">orange</span> arrows were just used, and a
       <span class="key key-dead">red dashed</span> circle is a guess that hit a dead end.

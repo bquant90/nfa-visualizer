@@ -41,6 +41,10 @@ const App = (function () {
   // The playback controller for the string that was run last (null if none).
   let player = null;
 
+  // Strings longer than this would build thousands of tape boxes and table rows
+  // and slow down the browser. engine.js itself has no limit.
+  const MAX_STRING_LENGTH = 2000;
+
   // ---------- 1. Loading a machine ----------
 
   // Read the text box, hand it to the parser, show what came back.
@@ -87,10 +91,10 @@ const App = (function () {
 
     let text;
     try {
-      // "fatal: true" means: refuse files that aren't proper UTF-8 text,
-      // the same way the Python version does.
+      // "fatal: true" refuses invalid UTF-8 like Python. "ignoreBOM: true" keeps
+      // any leading BOM so parser.js strips at most one, matching Python's utf-8-sig.
       const bytes = await file.arrayBuffer();
-      text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+      text = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(bytes);
     } catch {
       current = null;
       fileNameLabel.textContent = "";
@@ -192,11 +196,16 @@ const App = (function () {
   function show(kind, text) {
     statusBox.className = "status " + kind;
     if (kind === "error") {
+      // Only announce errors to screen readers; the "ok" summary re-renders on every Run.
+      statusBox.setAttribute("role", "alert");
+      statusBox.setAttribute("aria-live", "polite");
       // Error messages are sentences: let browser translation work on them,
       // but keep the quoted names ('q9', 'foo') exactly as typed.
       statusBox.translate = true;
       Display.setText(statusBox, text);
     } else {
+      statusBox.removeAttribute("role");
+      statusBox.setAttribute("aria-live", "off");
       // The summary is code-like (Alphabet: {0, 1}...), so it's never translated.
       statusBox.translate = false;
       statusBox.textContent = text;
@@ -221,7 +230,19 @@ const App = (function () {
     const text = Parser.strip(rawText);
     testInput.value = text;
 
-    // 1. The engine records every step.  2. Display builds the tape and table.
+    const charCount = Array.from(text).length;
+    if (charCount > MAX_STRING_LENGTH) {
+      forgetRun();
+      verdictBox.hidden = false;
+      verdictBox.className = "status error";
+      verdictBox.textContent =
+        `That string has ${charCount.toLocaleString()} characters, which is too long to step through ` +
+        `(the limit is ${MAX_STRING_LENGTH.toLocaleString()}). Try a shorter string.`;
+      return;
+    }
+
+    // 1. The engine records every step.  
+    // 2. Display builds the tape and table.
     // 3. A player starts at step 0; the buttons move it back and forth.
     const result = Engine.run(current.machine, text);
     Display.showTape(tapeBox, result, headsUpBox, Explain.headsUp(current.machine, result));
@@ -229,18 +250,20 @@ const App = (function () {
 
     // The verdict stays hidden until the last step has been shown once,
     // so learners can predict the answer before they see it.
+    // We only update #verdict when its state actually changes, so screen
+    // readers don't re-announce it on every step.
     let revealed = false;
+    if (result.steps.length > 1) Display.showPending(verdictBox);
     player = Player.create({
       count: result.steps.length,
       onShow: index => {
         Display.showStep(result, index, stepLabel);
         Display.showCaption(captionBox, Explain.step(current.machine, result, index), stateNames());
-        if (player.atEnd()) revealed = true;
-        if (revealed) {
+        if (!revealed && index === result.steps.length - 1) {
+          revealed = true;
           Display.showVerdict(verdictBox, result.accepted,
                               Explain.verdict(current.machine, result), stateNames());
         }
-        else Display.showPending(verdictBox);
         updateButtons();
       },
     });
@@ -335,9 +358,17 @@ const App = (function () {
 
   // Light / dark mode. The button shows the current choice; clicking cycles it.
   // Whenever the colors change, the drawing re-reads them from style.css.
-  const THEME_LABELS = { auto: "◐ Theme: Auto", light: "☀ Theme: Light", dark: "☾ Theme: Dark" };
+  const THEME_LABELS = {
+    auto:  { icon: "◐", text: "Theme: Auto" },
+    light: { icon: "☀", text: "Theme: Light" },
+    dark:  { icon: "☾", text: "Theme: Dark" },
+  };
   function showThemeChoice() {
-    themeButton.textContent = THEME_LABELS[Theme.choice()];
+    const { icon, text } = THEME_LABELS[Theme.choice()];
+    const sym = document.createElement("span");
+    sym.setAttribute("aria-hidden", "true");
+    sym.textContent = icon + " ";
+    themeButton.replaceChildren(sym, text);
     themeButton.title = "Auto follows your device's own light/dark setting. Click to switch.";
   }
   themeButton.addEventListener("click", () => { Theme.next(); showThemeChoice(); });

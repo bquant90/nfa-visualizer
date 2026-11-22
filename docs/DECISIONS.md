@@ -218,3 +218,20 @@ Newest decisions go at the bottom.
 ## 45. Phone layout: bigger tap targets, 16px text boxes, roomier layout on narrow screens
 
 **Why:** 44px is a comfortable thumb size. Under 16px, iPhones zoom in on text boxes. Narrow screens squeezed the circles together.
+
+## 46. Translation is left to the browser; the page is made translate-friendly
+
+**Why:** Covers every language for free. State names, quoted characters and code are marked translate="no" so they always match the drawing. "Why:" moved out of CSS, because browsers don't translate stylesheet text.
+**Passed on:** A built-in Spanish version (lots of work, one language). A translation service (costs money, needs a server).
+
+## 47. ← → keys step through a run (ignored while typing in a box)
+
+## 48. Captions and the verdict are announced to screen readers (aria-live)
+
+## 49. Share links carry the machine after "#" in the address
+
+**Why:** No server or database needed. The part after # never leaves the visitor's browser.
+
+## 50. README, link preview, favicon, and a review brief for outside reviewers
+
+**Why:** The README explains the project to strangers. REVIEW-BRIEF.md gives any reviewer (human or AI) the context and rules up front.

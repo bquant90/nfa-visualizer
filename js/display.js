@@ -12,7 +12,7 @@ const Display = (function () {
   // ---------- 1. Drawing the machine ----------
 
   // The current Cytoscape drawing (null when nothing is drawn).
-  // Phase 4 will use this to light up states and arrows.
+  // showStep() uses this to light up states and arrows.
   let cy = null;
 
   // The start state of the machine being drawn (the start arrow points at it).
@@ -39,9 +39,12 @@ const Display = (function () {
         "label": "data(id)",
         "text-valign": "center",
         "font-family": "Consolas, monospace",
-        "font-size": 16,
+        "font-size": "data(fontSize)",    // shrinks for long names so circles don't grow huge
+        "text-wrap": "wrap",
+        "text-overflow-wrap": "anywhere",
+        "text-max-width": 100,
         "color": color("--node-text"),
-        "width": "data(size)",            // bigger circles for longer names
+        "width": "data(size)",            // bigger circles for longer names, up to a cap
         "height": "data(size)",
         "background-color": color("--node-fill"),
         "border-width": 2,
@@ -58,6 +61,7 @@ const Display = (function () {
     // The invisible dot the start arrow comes from.
     { selector: "node.ghost", style: {
         "width": 1, "height": 1,
+        "font-size": 1,
         "background-opacity": 0,
         "border-width": 0,
         "label": "",
@@ -73,6 +77,8 @@ const Display = (function () {
         "color": color("--edge-text"),
         "font-family": "Consolas, monospace",
         "font-size": 15,
+        "text-wrap": "wrap",
+        "text-max-width": 140,            // wraps long lists like "a, b, c, ..., z" onto multiple lines
         "text-background-color": color("--canvas"),   // a small backing so labels stay readable over lines
         "text-background-opacity": 1,
         "text-background-padding": 2,
@@ -132,9 +138,12 @@ const Display = (function () {
     const elements = [];
 
     for (const state of Parser.sorted(machine.states)) {
+      const len = Math.max(1, Array.from(state).length);
+      const size = Math.min(120, Math.max(54, len * 10 + 22));
+      const fontSize = Math.max(9, Math.min(16, Math.floor((size - 16) / (len * 0.6))));
       elements.push({
         group: "nodes",
-        data: { id: state, size: Math.max(54, Array.from(state).length * 10 + 22) },
+        data: { id: state, size, fontSize },
         classes: machine.accepting.has(state) ? "accepting" : "",
       });
     }
@@ -168,7 +177,7 @@ const Display = (function () {
     return elements;
   }
 
-  // The ID of the arrow between two states. Phase 4 uses this to find the
+  // The ID of the arrow between two states. showStep() uses this to find the
   // exact arrow a step used.
   function edgeId(from, to) {
     return `edge from ${from} to ${to}`;
@@ -186,7 +195,7 @@ const Display = (function () {
       minZoom: 0.1,
       maxZoom: 2.5,
       boxSelectionEnabled: false,   // no drag-to-select rectangle; dragging moves circles
-      autounselectify: true,        // clicking doesn't "select" things (Phase 4 does highlighting)
+      autounselectify: true,        // clicking doesn't "select" things (showStep() does highlighting)
     });
 
     arrange(layoutName, false);
@@ -271,12 +280,14 @@ const Display = (function () {
   // It comes from the left, unless the start state is on the right of the drawing.
   function placeGhost() {
     if (!cy) return;
-    const start = cy.getElementById(startState).position();
+    const startNode = cy.getElementById(startState);
+    const start = startNode.position();
     const states = cy.nodes().not(cy.getElementById(GHOST));
     const box = states.boundingBox();
     const middle = box.x1 + box.w / 2;
     const side = start.x > middle + 1 ? 1 : -1;   // +1 = right, -1 = left
-    cy.getElementById(GHOST).position({ x: start.x + side * 75, y: start.y });
+    const gap = startNode.outerWidth() / 2 + 42;
+    cy.getElementById(GHOST).position({ x: start.x + side * gap, y: start.y });
   }
 
   // Remove the drawing and show a grey message instead.
@@ -305,25 +316,43 @@ const Display = (function () {
   // so the words always match the drawing.
   //   names: the machine's state names (optional)
   function setText(element, text, names = []) {
-    element.replaceChildren();
-    const escaped = [...new Set(names)]
-      .filter(name => name)
-      .sort((a, b) => b.length - a.length)               // longest first: "q10" before "q1"
-      .map(name => name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
-    const pieces = ["'[^'\\s]+'", '"[^"]*"'];          // 'x', 'q9' and "a string"
-    if (escaped.length) pieces.push(`(?<![\\p{L}\\p{N}_-])(?:${escaped.join("|")})(?![\\p{L}\\p{N}_-])`);
-    const pattern = new RegExp(pieces.join("|"), "gu");
+    try {
+      element.replaceChildren();
+      const escaped = [...new Set(names)]
+        .filter(name => name)
+        .sort((a, b) => b.length - a.length)               // longest first: "q10" before "q1"
+        .map(name => name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+      const pieces = ["('[^'\\s]+'|\"[^\"]*\")"];          // 'x', 'q9' and "a string"
+      if (escaped.length) pieces.push(`(?:${escaped.join("|")})`);
+      const pattern = new RegExp(pieces.join("|"), "gu");
+      const WORD_END = /[\p{L}\p{N}_-]$/u;
+      const WORD_START = /^[\p{L}\p{N}_-]/u;
 
-    let last = 0;
-    for (const match of text.matchAll(pattern)) {
-      if (match.index > last) element.append(text.slice(last, match.index));
-      const span = document.createElement("span");
-      span.translate = false;
-      span.textContent = match[0];
-      element.append(span);
-      last = match.index + match[0].length;
+      let last = 0;
+      let match;
+      while ((match = pattern.exec(text)) !== null) {
+        const start = match.index;
+        const end = start + match[0].length;
+        // Bare state names only match whole words (not inside another word).
+        if (!match[1]) {
+          const before = text.slice(Math.max(0, start - 2), start);
+          const after = text.slice(end, end + 2);
+          if (WORD_END.test(before) || WORD_START.test(after)) {
+            pattern.lastIndex = start + (text.codePointAt(start) > 0xFFFF ? 2 : 1);
+            continue;
+          }
+        }
+        if (start > last) element.append(text.slice(last, start));
+        const span = document.createElement("span");
+        span.translate = false;
+        span.textContent = match[0];
+        element.append(span);
+        last = end;
+      }
+      element.append(text.slice(last));
+    } catch {
+      element.textContent = text;
     }
-    element.append(text.slice(last));
   }
 
   // Show the final answer in a green or red box.
@@ -333,7 +362,17 @@ const Display = (function () {
     box.className = "status " + (accepted ? "ok" : "error");
     const title = document.createElement("span");
     title.className = "verdict-title";
-    setText(title, words.title, names);
+    const match = words.title.match(/^([✓✗]\s+)/);
+    if (match) {
+      const icon = document.createElement("span");
+      icon.setAttribute("aria-hidden", "true");
+      icon.textContent = match[1];
+      const rest = document.createElement("span");
+      setText(rest, words.title.slice(match[1].length), names);
+      title.replaceChildren(icon, rest);
+    } else {
+      setText(title, words.title, names);
+    }
     const detail = document.createElement("span");
     detail.className = "verdict-detail";
     setText(detail, words.detail, names);
@@ -344,7 +383,19 @@ const Display = (function () {
   function showPending(box) {
     box.hidden = false;
     box.className = "status pending";
-    box.textContent = "Step to the end (or click End ⏭) to see whether this string is accepted.";
+    const icon = document.createElement("span");
+    icon.setAttribute("aria-hidden", "true");
+    icon.textContent = "⏭";
+    box.replaceChildren("Step to the end (or click End ", icon, ") to see whether this string is accepted.");
+  }
+
+  // Make invisible characters visible on the tape and step table.
+  function visibleChar(ch) {
+    if (ch === " ")  return "␣";
+    if (ch === "\t") return "⇥";
+    if (ch === "\n" || ch === "\r") return "↵";
+    if (/^[\s\p{Cc}\p{Cf}]$/u.test(ch)) return "·";
+    return ch;
   }
 
   // Build the tape: the test string, one box per character.
@@ -366,7 +417,7 @@ const Display = (function () {
     for (const ch of characters) {
       const cell = document.createElement("span");
       cell.className = "cell";
-      cell.textContent = ch === " " ? "␣" : ch;   // make spaces visible
+      cell.textContent = visibleChar(ch);
       if (result.outsideAlphabet.includes(ch)) cell.dataset.foreign = "yes";
       container.appendChild(cell);
       tapeCells.push(cell);
@@ -386,7 +437,7 @@ const Display = (function () {
     result.steps.forEach((step, index) => {
       const row = addRow(table, "td", [
         String(step.position),
-        step.kind === "start" ? "(start)" : `'${step.symbol}'`,
+        step.kind === "start" ? "(start)" : `'${visibleChar(step.symbol)}'`,
         step.kind === "start" ? "—" : Parser.formatSet(step.before),
         Parser.formatSet(step.after),
         step.moves.length ? step.moves.map(m => `${m.from} → ${m.to}`).join(", ") : "—",
@@ -403,7 +454,14 @@ const Display = (function () {
         row.cells[1].textContent += "  not in alphabet";
       }
       row.classList.add("clickable");
+      row.tabIndex = 0;
       row.addEventListener("click", () => onPick(index));
+      row.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onPick(index);
+        }
+      });
       tableRows.push(row);
     });
     container.appendChild(table);
@@ -455,7 +513,12 @@ const Display = (function () {
     });
 
     // The table: mark the matching row.
-    tableRows.forEach((row, i) => row.classList.toggle("current-row", i === index));
+    tableRows.forEach((row, i) => {
+      const current = i === index;
+      row.classList.toggle("current-row", current);
+      if (current) row.setAttribute("aria-current", "step");
+      else row.removeAttribute("aria-current");
+    });
 
     // The short label next to the buttons. The caption (below) says the rest.
     const total = Array.from(result.text).length;

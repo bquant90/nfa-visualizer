@@ -30,9 +30,19 @@ const Explain = (function () {
     return items.slice(0, -1).join(", ") + ` ${joiner} ` + items[items.length - 1];
   }
 
-  // How to write a character in a sentence. Spaces would be invisible.
+  // How to write a character in a sentence. Invisible characters get plain names.
   function quoteChar(ch) {
-    return ch === " " ? "a space" : `'${ch}'`;
+    if (ch === " ")  return "a space";
+    if (ch === "\t") return "a tab";
+    if (ch === "\n" || ch === "\r") return "a line break";
+    if (ch === "\u00a0") return "a non-breaking space";
+    if (/^[\s\p{Cc}\p{Cf}]$/u.test(ch)) return "an invisible character";
+    return `'${ch}'`;
+  }
+
+  // The machine's alphabet with each character quoted, e.g. "'a', 'c', 's' and 't'".
+  function alphabetList(machine) {
+    return list(Parser.sorted(machine.alphabet).map(quoteChar), "and");
   }
 
   // ---------- The main entry point ----------
@@ -52,8 +62,9 @@ const Explain = (function () {
     // Case 1: a character the machine doesn't know at all.
     if (!s.inAlphabet) {
       return {
-        what: `Read ${sym}, which isn't one of this machine's characters ` +
-              `(${list(Parser.sorted(machine.alphabet), "and")}).`,
+        what: machine.alphabet.size === 0
+          ? `Read ${sym}, but this machine has no characters in its alphabet.`
+          : `Read ${sym}, which isn't one of this machine's characters (${alphabetList(machine)}).`,
         why: "No arrow can read it, so every guess hits a dead end and the machine is stuck.",
       };
     }
@@ -99,8 +110,12 @@ const Explain = (function () {
     // 1. The confusing case first: a guess dies, but another lands right back on it.
     if (refilled.length === 1) {
       const state = refilled[0];
+      const froms = cameFrom.get(state);
+      const arrival = froms.length === 1
+        ? `${froms[0]}'s arrow brings a new guess to ${state}.`
+        : `arrows from ${list(froms, "and")} bring new guesses to ${state}.`;
       out.push(`${state} has no arrow for ${sym}, so its own guess is dropped, ` +
-               `but ${cameFrom.get(state)[0]}'s arrow brings a new guess to ${state}.`);
+               `but ${arrival}`);
     } else if (refilled.length > 1) {
       out.push(`${list(refilled, "and")} have no arrow for ${sym}, but other arrows ` +
                `bring new guesses back to them.`);
@@ -159,9 +174,11 @@ const Explain = (function () {
     return `This ${length}-character string`;
   }
 
-  // "a double circle" / "double circles", for 1 or more states.
+  // "a double circle (an accepting state)" / "double circles (accepting states)".
   function doubleCircles(count) {
-    return count === 1 ? "a double circle" : "double circles";
+    return count === 1
+      ? "a double circle (an accepting state)"
+      : "double circles (accepting states)";
   }
 
   function verdict(machine, result) {
@@ -172,17 +189,21 @@ const Explain = (function () {
     if (result.accepted) {
       const w = result.winners;
       const isAre = w.length === 1 ? "is" : "are";
-      let detail = empty
-        ? `With nothing to read, the machine stays in ${list(last.after)}, ` +
-          `and ${list(w, "and")} ${isAre} ${doubleCircles(w.length)} (an accepting state).`
-        : `After reading every character, the machine could be in ${list(last.after)}, ` +
-          `and ${list(w, "and")} ${isAre} ${doubleCircles(w.length)} (an accepting state).`;
-      // Some guesses finished elsewhere. That's fine: one winner is enough.
-      if (last.after.length > w.length) detail += " Only one guess has to finish on a double circle.";
-      return { title: `✓ Accepted. ${name} is accepted.`, detail };
+      let detail;
+      if (last.after.length === 1) {
+        detail = empty
+          ? `With nothing to read, the machine stays in ${last.after[0]}, which is ${doubleCircles(1)}.`
+          : `After reading every character, the machine finished in ${last.after[0]}, which is ${doubleCircles(1)}.`;
+      } else {
+        detail = `After reading every character, the machine could be in ${list(last.after)}, ` +
+                 `and ${list(w, "and")} ${isAre} ${doubleCircles(w.length)}.`;
+        // Some guesses finished elsewhere. That's fine: one winner is enough.
+        if (last.after.length > w.length) detail += " Only one guess has to finish on a double circle.";
+      }
+      return { title: `✓ ${name} is accepted.`, detail };
     }
 
-    const title = `✗ Rejected. ${name} is rejected.`;
+    const title = `✗ ${name} is rejected.`;
 
     if (result.reason === "no-accepting-state") {
       const states = last.after;
@@ -205,9 +226,12 @@ const Explain = (function () {
       const what = unknown.length === 1
         ? `It contains ${unknown[0]}, which isn't one of this machine's characters`
         : `It contains ${list(unknown, "and")}, which aren't characters this machine knows`;
+      const knows = machine.alphabet.size === 0
+        ? "this machine has no characters in its alphabet"
+        : `it only knows ${alphabetList(machine)}`;
       return {
         title,
-        detail: `${what} (it only knows ${list(Parser.sorted(machine.alphabet), "and")}). ` +
+        detail: `${what} (${knows}). ` +
                 `The machine got stuck as soon as it reached character ${stuckAt}.` + neverRead,
       };
     }
@@ -229,10 +253,13 @@ const Explain = (function () {
     const these = unknown.length === 1
       ? `${unknown[0]} isn't one of this machine's characters`
       : `${list(unknown, "and")} aren't characters this machine knows`;
+    const knows = machine.alphabet.size === 0
+      ? "this machine has no characters in its alphabet"
+      : `it only knows ${alphabetList(machine)}`;
     const where = unknown.length === 1
       ? "It's outlined in red on the tape. Watch what happens when the machine reaches it."
       : "They're outlined in red on the tape. Watch what happens when the machine reaches one.";
-    return `Heads up: ${these} (it only knows ${list(Parser.sorted(machine.alphabet), "and")}). ` + where;
+    return `Heads up: ${these} (${knows}). ` + where;
   }
 
   return { step, verdict, headsUp };

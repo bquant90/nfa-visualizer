@@ -14,11 +14,17 @@
 const Player = (function () {
 
   function create({ count, onShow }) {
-    let index = 0;   // which step is on screen right now
+    let index = 0;       // which step is on screen right now
+    let shown = false;   // whether any step has been shown yet
 
     // Jump to any step. Numbers past either end are pulled back in range.
+    // Does nothing if there are no steps, or if that step is already on screen.
     function goTo(newIndex) {
-      index = Math.max(0, Math.min(count - 1, newIndex));
+      if (count <= 0) return;
+      const clamped = Math.max(0, Math.min(count - 1, newIndex));
+      if (shown && clamped === index) return;
+      index = clamped;
+      shown = true;
       onShow(index);
     }
 
@@ -29,8 +35,8 @@ const Player = (function () {
       reset:   () => goTo(0),
       end:     () => goTo(count - 1),
       index:   () => index,
-      atStart: () => index === 0,
-      atEnd:   () => index === count - 1,
+      atStart: () => index <= 0,
+      atEnd:   () => index >= count - 1,
     };
   }
 

@@ -104,3 +104,12 @@ New terms, one plain-English line each. Grouped by topic.
 - **Media query:** A CSS rule that only applies in certain conditions, like "screen narrower than 600px" or "touch screen."
 - **localStorage:** A small notepad the browser keeps for each website. We use it to remember the theme.
 - **Tap target:** The area you can tap on a touch screen. Too small and fingers miss.
+
+## Web pages
+
+- **translate="no":** A tag telling browser translation to leave that text exactly as it is.
+- **aria-live:** A tag telling screen readers to read an area aloud whenever it changes.
+- **URL hash (#):** The part of a web address after "#". It stays in the browser and is never sent to the server.
+- **Open Graph tags:** Lines in the page's head that control how a link preview looks when shared.
+- **Favicon:** The little icon in the browser tab.
+- **License:** The file that says what others may legally do with your code. No license means "all rights reserved."

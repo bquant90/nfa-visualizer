@@ -60,9 +60,10 @@ const Check = (function () {
   // Same layout as the PowerShell loop that runs Python on every test file.
   function manyFiles(files, withTrace) {
     const out = [];
-    for (const { name, text } of files) {
+    for (const { name, text, error } of files) {
       out.push(`===== ${name}`);
-      out.push(...pythonOutput(text, withTrace));
+      if (error) out.push(error);
+      else out.push(...pythonOutput(text, withTrace));
     }
     return out.join("\n");
   }
@@ -83,7 +84,15 @@ const Check = (function () {
   async function readFiles() {
     loaded = [];
     for (const file of fileInput.files) {
-      loaded.push({ name: file.name, text: await file.text() });
+      try {
+        // "fatal: true" refuses invalid UTF-8; "ignoreBOM: true" lets parser.js
+        // strip at most one leading BOM, matching Python's utf-8-sig.
+        const bytes = await file.arrayBuffer();
+        const text = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(bytes);
+        loaded.push({ name: file.name, text });
+      } catch {
+        loaded.push({ name: file.name, error: `Error: ${file.name} is not valid UTF-8 text` });
+      }
     }
     // Same order Windows lists them in (by name, ignoring capital letters).
     loaded.sort((a, b) => a.name.toUpperCase() < b.name.toUpperCase() ? -1 : 1);
@@ -97,9 +106,13 @@ const Check = (function () {
   }
 
   async function copyOutput() {
-    await navigator.clipboard.writeText(output.textContent);
-    copyButton.textContent = "Copied!";
-    setTimeout(() => { copyButton.textContent = "Copy output"; }, 1500);
+    try {
+      await navigator.clipboard.writeText(output.textContent);
+      copyButton.textContent = "Copied!";
+    } catch {
+      copyButton.textContent = "Copy blocked — select and press Ctrl+C";
+    }
+    setTimeout(() => { copyButton.textContent = "Copy output"; }, 2000);
   }
 
   fileInput.addEventListener("change", readFiles);

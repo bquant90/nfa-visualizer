@@ -159,6 +159,12 @@ textarea, input[type="text"], select {
   border-radius: 6px;
 }
 
+/* Keyboard focus ring that stands out in both light and dark themes. */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
 /* The box where users type or paste a machine. */
 #source {
   width: 100%;
@@ -375,9 +381,15 @@ details summary h2 { display: inline; margin: 0; }
   #test-string { min-width: 0; flex: 1 1 100%; }
   .actions > button { flex: 1 1 auto; }
   /* The four playback buttons split the row evenly; the step label goes below. */
-  .player button { flex: 1 1 0; padding-left: 4px; padding-right: 4px; }
+  .player button { flex: 1 1 0; padding-left: 4px; padding-right: 4px; white-space: nowrap; }
   .step-label { flex-basis: 100%; margin-left: 0; text-align: center; }
   .toolbar select { flex: 1 1 auto; }
+}
+
+/* Very narrow phones (down to 320px): tighten playback buttons so they stay on one line. */
+@media (max-width: 420px) {
+  .player { gap: 6px; }
+  .player button { font-size: 13px; padding-left: 2px; padding-right: 2px; }
 }
 
 /* Fingers are bigger than mouse pointers: make everything tappable. */
